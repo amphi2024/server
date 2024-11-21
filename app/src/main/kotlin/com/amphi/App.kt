@@ -53,6 +53,7 @@ class App : AbstractVerticle(), Handler<HttpServerRequest> {
         vertx.createHttpServer(options).requestHandler{req ->
 
             val ipAddress = req.remoteAddress().hostAddress()
+            println("request - ip: $ipAddress, ${req.path()} ")
             if(RateLimiter.isAllowed(ipAddress)) {
                 if(ServerSettings.whitelistOnly) {
                     if(ServerSettings.inWhiteList(ipAddress)) {
@@ -74,7 +75,7 @@ class App : AbstractVerticle(), Handler<HttpServerRequest> {
                 else {
                     handle(req)
                     if(!ServerSettings.inWhiteList(ipAddress)) {
-                        ServerSettings.writeLog("Request from non-whitelisted IP: $ipAddress")
+                       // ServerSettings.writeLog("Request from non-whitelisted IP: $ipAddress")
                     }
                 }
             }
