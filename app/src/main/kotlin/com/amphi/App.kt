@@ -96,9 +96,9 @@ fun main() {
         ServerDatabase.close()
     })
 
-    vertx.setPeriodic(500) {
-        readCommand()
-    }
+//    vertx.setPeriodic(500) {
+//        readCommand()
+//    }
 
     val scheduler = Executors.newScheduledThreadPool(1)
 

@@ -20,7 +20,7 @@ object UpdateService {
         client.get(CENTRAL_SERVER_PORT, CENTRAL_SERVER_ADDRESS, "/server/version")
             .ssl(USE_SSL)  // HTTPS 연결 사용
             .send { response ->
-                if (response.succeeded()) {
+                if (response.succeeded() && response.result().statusCode() == 200) {
                     val result = response.result()
                     val latestVersion = result.bodyAsString()
                     if(VERSION != latestVersion) {
