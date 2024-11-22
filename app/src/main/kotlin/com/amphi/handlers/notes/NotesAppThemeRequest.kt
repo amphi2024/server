@@ -67,6 +67,7 @@ object NotesAppThemeRequest {
                         val file = File("users/${token.userId}/notes/notes/themes/${filename}")
                         file.writeText(buffer.toString())
                         ServerDatabase.saveEvent(token = token, action = "upload_theme", value = filename, appType = "notes")
+
                         sendSuccess(req)
                     }
                 )

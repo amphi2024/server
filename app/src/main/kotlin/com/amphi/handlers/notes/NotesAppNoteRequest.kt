@@ -101,6 +101,7 @@ object NotesAppNoteRequest {
         }
     }
 
+
     fun deleteNote(req: HttpServerRequest, split: List<String>) {
         val requestToken = req.headers()["Authorization"]
         val filename = split[2]

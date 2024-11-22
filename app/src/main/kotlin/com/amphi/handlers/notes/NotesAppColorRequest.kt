@@ -51,6 +51,7 @@ object NotesAppColorRequest {
                         val file = File("users/${token.userId}/notes/notes/colors")
                         file.writeText(buffer.toString())
                         ServerDatabase.saveEvent(token = token, action = "upload_colors", value = "", appType = "notes")
+
                         sendSuccess(req)
                     }
                 )
