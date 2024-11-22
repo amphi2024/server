@@ -53,7 +53,7 @@ class App : AbstractVerticle(), Handler<HttpServerRequest> {
         vertx.createHttpServer(options).requestHandler{req ->
 
             val ipAddress = req.remoteAddress().hostAddress()
-            println("request - ip: $ipAddress, ${req.path()} ")
+            println("request - ip: $ipAddress, ${req.path()} ${req.method().name()}")
             if(RateLimiter.isAllowed(ipAddress)) {
                 if(ServerSettings.whitelistOnly) {
                     if(ServerSettings.inWhiteList(ipAddress)) {
