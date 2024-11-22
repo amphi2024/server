@@ -66,6 +66,8 @@ object NotesAppNoteRequest {
                     onAuthenticated = { token ->
                         val file = File("users/${token.userId}/notes/notes/${filename}")
                         file.writeText(buffer.toString())
+                        ServerDatabase.saveEvent(token = token, action = "upload_note", value = filename, appType = "notes")
+
                         sendSuccess(req)
                     }
                 )
