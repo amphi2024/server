@@ -23,7 +23,7 @@ object ServerFileUtils {
             if(file.isFile) {
                 trashLogs.forEach { trashLog ->
                     if(trashLog.path == file.path) {
-                        val period = Duration.between(trashLog.date, LocalDateTime.now())
+                        val period = Duration.between(trashLog.timeStamp, LocalDateTime.now())
                         if (period.toDays() > 30) {
                             file.delete()
                             ServerDatabase.deleteTrashLog(trashLog.path)

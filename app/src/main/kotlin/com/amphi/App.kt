@@ -9,6 +9,9 @@ import io.vertx.core.http.HttpServerOptions
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.net.PfxOptions
 import java.io.File
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.system.exitProcess
@@ -22,6 +25,7 @@ class App : AbstractVerticle(), Handler<HttpServerRequest> {
                 path == "/" -> {
                     req.response().putHeader("content-type", "text/plain").end("server is running")
                 }
+                path == "/version" -> req.response().putHeader("content-type", "text/plain").end("0.0.0")
                 path == "/storage" -> StorageHandler.handleStorageInfo(req)
                 path.startsWith("/users") -> UserHandler.handleUserRequest(req)
                 path.startsWith("/notes") -> NotesAppRequestHandler.handleRequest(req)
@@ -91,7 +95,7 @@ fun main() {
     val vertx = Vertx.vertx()
     vertx.deployVerticle(App())
 
-    println("Server is running on ${ServerSettings.port} here we go!")
+    println("Server is running on ${ServerSettings.port} Let's we go!")
     Runtime.getRuntime().addShutdownHook(Thread {
         ServerSettings.saveLogs()
         ServerDatabase.close()
@@ -110,21 +114,6 @@ fun main() {
             ServerDatabase.deleteObsoleteTokens()
             ServerSettings.saveLogs()
             ServerFileUtils.deleteObsoleteFiles()
-            UpdateService.checkForUpdate(vertx) {
-                vertx.close()
-
-                val currentDir = System.getProperty("user.dir") // 현재 작업 디렉토리
-                val updateJarPath = "$currentDir/update-service.jar" // 같은 디렉토리의 업데이트 서비스 JAR 파일 경로
-                val command = listOf("java", "-jar", updateJarPath)
-
-                // ProcessBuilder를 사용하여 업데이트 서비스 JAR 파일 실행
-                val processBuilder = ProcessBuilder(command)
-                processBuilder.directory(File(currentDir)) // 작업 디렉토리 설정
-                processBuilder.redirectErrorStream(true)
-
-                processBuilder.start()
-                exitProcess(0)
-            }
         } catch (e: Exception) {
             e.printStackTrace()
         }

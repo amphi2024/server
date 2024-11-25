@@ -1,5 +1,5 @@
 package com.amphi.models
 
-import java.time.LocalDateTime
+import java.time.Instant
 
-data class TrashLog(val path: String, val date: LocalDateTime)
+data class TrashLog(val path: String, val timeStamp: Instant)

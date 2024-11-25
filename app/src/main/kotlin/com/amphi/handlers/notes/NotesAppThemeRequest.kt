@@ -35,11 +35,7 @@ object NotesAppThemeRequest {
                         for (file in files) {
                             val jsonObject = JsonObject()
                             jsonObject.put("filename", file.name)
-                            jsonObject.put(
-                                "modified", Instant.ofEpochMilli(file.lastModified())
-                                    .atZone(ZoneId.systemDefault())
-                                    .toLocalDateTime().stringify()
-                            )  // ex: 2024;7;13;18;30;13
+                            jsonObject.put("modified", file.lastModified())  // ex: 2024;7;13;18;30;13
                             jsonArray.add(jsonObject)
                         }
                     }

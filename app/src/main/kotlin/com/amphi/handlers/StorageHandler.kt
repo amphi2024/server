@@ -42,7 +42,6 @@ object StorageHandler {
     }
 
     fun handleStorageInfo(req: HttpServerRequest) {
-        val (totalSpace, usableSpace) = getDiskSpace()
   
         val usedSpace = getFileSize("database.db") + getFileSize("settings.txt") + getFileSize("white-list.txt") + getFileSize("black-list.txt") + getDirectorySize()
 
@@ -51,8 +50,6 @@ object StorageHandler {
         val file = File("/")
         val totalBytes = file.totalSpace
         val usableBytes = file.usableSpace
-//        jsonObject.put("total", totalSpace)
-//        jsonObject.put("usable", usableSpace)
         jsonObject.put("total", totalBytes)
         jsonObject.put("usable", usableBytes)
         jsonObject.put("used", usedSpace)

@@ -6,10 +6,10 @@ import com.amphi.models.Token
 import com.amphi.models.TrashLog
 import de.mkammerer.argon2.Argon2
 import de.mkammerer.argon2.Argon2Factory
-import java.io.File
 import java.security.SecureRandom
 import java.sql.*
-import java.time.LocalDateTime
+import java.time.Duration
+import java.time.Instant
 
 object ServerDatabase {
 
@@ -40,7 +40,7 @@ object ServerDatabase {
                     """
                 CREATE TABLE IF NOT EXISTS tokens (
                     token TEXT PRIMARY KEY NOT NULL,
-                    last_accessed TEXT NOT NULL,
+                    last_accessed INTEGER NOT NULL,
                     user_id TEXT NOT NULL,
                     device_name TEXT NOT NULL
                 );
@@ -52,7 +52,7 @@ object ServerDatabase {
                     token TEXT NOT NULL,
                     action TEXT NOT NULL,
                     value TEXT NOT NULL,
-                    date TEXT NOT NULL,
+                    timestamp INTEGER NOT NULL,
                     app_type TEXT
                 );
             """
@@ -61,7 +61,7 @@ object ServerDatabase {
                     """
            CREATE TABLE IF NOT EXISTS trashes (
                     path TEXT PRIMARY KEY NOT NULL,
-                    date TEXT NOT NULL
+                    timestamp INTEGER NOT NULL
                 );
             """
                 )
@@ -76,7 +76,7 @@ object ServerDatabase {
                             Token(
                                 userId = resultSet.getString("user_id"),
                                 token = resultSet.getString("token"),
-                                lastAccessed = parsedDate(resultSet.getString("last_accessed")),
+                                lastAccessed = Instant.ofEpochMilli(resultSet.getLong("last_accessed")),
                                 deviceName = resultSet.getString("device_name")
                             )
                         )
@@ -133,7 +133,7 @@ object ServerDatabase {
             val insertQuery = "INSERT INTO tokens (token, last_accessed, user_id, device_name) VALUES (? , ?, ?, ?);"
             val insertStatement = connection.prepareStatement(insertQuery)
             insertStatement.setString(1, token)
-            insertStatement.setString(2, LocalDateTime.now().stringify())
+            insertStatement.setLong(2, Instant.now().toEpochMilli())
             insertStatement.setString(3, id)
             insertStatement.setString(4, deviceName)
             insertStatement.executeUpdate()
@@ -145,7 +145,7 @@ object ServerDatabase {
                 userId = id,
                 token = token,
                 deviceName = deviceName,
-                lastAccessed = LocalDateTime.now()
+                lastAccessed = Instant.now()
               )
             )
             argon2.wipeArray(password.toCharArray())
@@ -210,10 +210,10 @@ object ServerDatabase {
 
     /**삭제된 파일의 경로를 참조함*/
     fun notifyFileDelete(path:String) {
-        val sql = "INSERT INTO trashes (path, date) VALUES ( ? , ?);"
+        val sql = "INSERT INTO trashes (path, timestamp) VALUES ( ? , ?);"
         val preparedStatement = connection.prepareStatement(sql)
         preparedStatement.setString(1, path)
-        preparedStatement.setString(2, LocalDateTime.now().stringify())
+        preparedStatement.setLong(2, Instant.now().toEpochMilli())
         preparedStatement.executeUpdate()
         preparedStatement.close()
     }
@@ -221,14 +221,14 @@ object ServerDatabase {
     /**삭제된 파일의 경로랑 삭제된 날짜 정보들 불러옴*/
     fun getTrashLogs() : List<TrashLog> {
         val list = mutableListOf<TrashLog>()
-        val sql = "SELECT path, date FROM trashes;"
+        val sql = "SELECT path, timestamp FROM trashes;"
         val statement = connection.prepareStatement(sql)
         val resultSet: ResultSet = statement.executeQuery()
         while (resultSet.next()) {
             list.add(
                 TrashLog(
                 path = resultSet.getString("path"),
-                date = parsedDate(resultSet.getString("date"))
+                timeStamp = Instant.ofEpochMilli(resultSet.getLong("timestamp"))
             )
             )
         }
@@ -251,12 +251,12 @@ object ServerDatabase {
         for(item in tokens) {
             if(item.userId == token.userId && item.token != token.token) {
                 println("saved event ${item.userId}, ${item.token}, ${item.deviceName}, $action, $appType")
-                val sql = "INSERT INTO events (token, action, value, date, app_type) VALUES ( ? , ? , ?, ?, ? );"
+                val sql = "INSERT INTO events (token, action, value, timestamp, app_type) VALUES ( ? , ? , ?, ?, ? );"
                 val preparedStatement = connection.prepareStatement(sql)
                 preparedStatement.setString(1, item.token)
                 preparedStatement.setString(2, action)
                 preparedStatement.setString(3, value)
-                preparedStatement.setString(4, LocalDateTime.now().stringify())
+                preparedStatement.setLong(4, Instant.now().toEpochMilli())
                 preparedStatement.setString(5, appType)
                 preparedStatement.executeUpdate()
                 preparedStatement.close()
@@ -266,7 +266,7 @@ object ServerDatabase {
 
     fun getEvents(token: String, appType: String): JsonArray {
         val jsonArray = JsonArray()
-        val sql = "SELECT action, value, date FROM Events WHERE token = ? AND app_type = ? OR app_type IS NULL;"
+        val sql = "SELECT action, value, timestamp FROM events WHERE token = ? AND app_type = ? OR app_type IS NULL;"
         val statement = connection.prepareStatement(sql)
         statement.setString(1 , token)
         statement.setString(2, appType)
@@ -275,7 +275,7 @@ object ServerDatabase {
             val jsonObject = JsonObject()
             jsonObject.put("action", resultSet.getString("action"))
             jsonObject.put("value", resultSet.getString("value"))
-            jsonObject.put("date", resultSet.getString("date"))
+            jsonObject.put("timestamp", resultSet.getLong("timestamp"))
             jsonArray.add(jsonObject)
         }
 
@@ -321,7 +321,7 @@ object ServerDatabase {
         var authenticated = false
         for (item in tokens) {
             if(token == item.token) {
-                item.lastAccessed = LocalDateTime.now()
+                item.lastAccessed = Instant.now()
                 authenticated = true
                 onAuthenticated(item)
                 break
@@ -349,7 +349,8 @@ object ServerDatabase {
     /**유효기간 자난 토큰, 토큰에 딸린 이벤트, 존재하지 않는 토큰을 참조하는 이벤트 싹다 삭제*/
     fun deleteObsoleteTokens() {
         val statement = connection.createStatement()
-        val fewDayAgo = LocalDateTime.now().minusDays(ServerSettings.loginExpirationPeriod.toLong())
+        val days = Duration.ofDays(ServerSettings.loginExpirationPeriod.toLong())
+        val fewDayAgo = Instant.now().minus(days)
         val iterator = tokens.iterator()
         while (iterator.hasNext()) {
             val token = iterator.next()
@@ -397,7 +398,7 @@ object ServerDatabase {
         tokens.forEach { token ->
             val sql = "UPDATE tokens SET last_accessed = ? WHERE token = ?;"
             val preparedStatement = connection.prepareStatement(sql)
-            preparedStatement.setString(1, token.lastAccessed.stringify())
+            preparedStatement.setLong(1, token.lastAccessed.toEpochMilli())
             preparedStatement.setString(2, token.token)
             preparedStatement.executeUpdate()
             preparedStatement.close()
