@@ -2,7 +2,6 @@ package com.amphi.handlers.notes
 
 import com.amphi.*
 import com.amphi.handlers.ServerEventHandler
-import com.amphi.handlers.WebSocketHandler
 import io.vertx.core.http.HttpServerRequest
 
 object NotesAppRequestHandler {
@@ -80,7 +79,7 @@ object NotesAppRequestHandler {
                                 "/notes/colors" -> NotesAppColorRequest.getColors(req)
                                 "/notes/events" -> ServerEventHandler.handleGetEvents(req, "notes")
                                 "/notes/themes" -> NotesAppThemeRequest.getThemes(req)
-                                "/notes/sync" -> WebSocketHandler.handleNotesAppWebsocket(req)
+                                "/notes/sync" -> NotesWebSocketHandler.handleWebsocket(req)
                                 else -> NotesAppNoteRequest.downloadNote(req, split)
                             }
                         }

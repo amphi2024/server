@@ -1,6 +1,7 @@
 package com.amphi
 
 import com.amphi.handlers.*
+import com.amphi.handlers.drive.DriveAppRequestHandler
 import com.amphi.handlers.notes.NotesAppRequestHandler
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Handler
@@ -9,12 +10,8 @@ import io.vertx.core.http.HttpServerOptions
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.net.PfxOptions
 import java.io.File
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneId
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
-import kotlin.system.exitProcess
 
 class App : AbstractVerticle(), Handler<HttpServerRequest> {
 

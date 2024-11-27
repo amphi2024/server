@@ -1,4 +1,4 @@
-package com.amphi.handlers
+package com.amphi.handlers.notes
 
 import io.vertx.core.http.HttpServerRequest
 import com.amphi.models.ConnectedUser
@@ -7,11 +7,11 @@ import com.amphi.ServerDatabase
 import com.amphi.StatusCode
 import com.amphi.sendAuthFailed
 
-object WebSocketHandler {
+object NotesWebSocketHandler {
 
     private val connectedNotesAppUsers: MutableList<ConnectedUser> = mutableListOf()
 
-    fun handleNotesAppWebsocket(req: HttpServerRequest) {
+    fun handleWebsocket(req: HttpServerRequest) {
         val token: String = req.headers()["Authorization"].toString()
         ServerDatabase.authenticateByToken(
             token = token,
