@@ -62,14 +62,14 @@ class App : AbstractVerticle(), Handler<HttpServerRequest> {
                     }
                     else {
                         req.response()
-                            .setStatusCode(403)
+                            .setStatusCode(StatusCode.FORBIDDEN)
                             .putHeader("content-type", "text/plain; charset=UTF-8")
                             .end(Messages.WHITE_LIST_ONLY)
                     }
                 }
                 else if(ServerSettings.inBlackList(ipAddress)) {
                     req.response()
-                        .setStatusCode(403)
+                        .setStatusCode(StatusCode.FORBIDDEN)
                         .putHeader("content-type", "text/plain; charset=UTF-8")
                         .end(ServerSettings.blockMessage)
                 }
