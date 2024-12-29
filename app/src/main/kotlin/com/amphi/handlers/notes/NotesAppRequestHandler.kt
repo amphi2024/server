@@ -110,7 +110,5 @@ object NotesAppRequestHandler {
                     sendNotFound(req)
                 }
             }
-
     }
-
 }
