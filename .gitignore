@@ -7,3 +7,4 @@ app/black-list.txt
 app/database.db
 app/white-list.txt
 app/settings.txt
+app/users
