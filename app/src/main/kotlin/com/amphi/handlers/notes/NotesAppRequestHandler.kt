@@ -17,6 +17,7 @@ object NotesAppRequestHandler {
                             when (split[3]) {
                                 "images" -> NotesAppFileRequest.downloadFile(req, split, "images")
                                 "videos" -> NotesAppFileRequest.downloadFile(req, split, "videos")
+                                "files" -> NotesAppFileRequest.downloadFile(req, split, "files")
                                 else -> sendBadRequest(req)
                             }
                         }
@@ -24,6 +25,7 @@ object NotesAppRequestHandler {
                             when (split[3]) {
                                 "images" -> NotesAppFileRequest.uploadFile(req, split, "images")
                                 "videos" -> NotesAppFileRequest.uploadFile(req, split, "videos")
+                                "files" -> NotesAppFileRequest.uploadFile(req, split, "files")
                                 else -> sendBadRequest(req)
                             }
                         }
@@ -31,6 +33,7 @@ object NotesAppRequestHandler {
                             when (split[3]) {
                                 "images" -> NotesAppFileRequest.deleteFile(req, split, "images")
                                 "videos" -> NotesAppFileRequest.deleteFile(req, split, "videos")
+                                "files" -> NotesAppFileRequest.deleteFile(req, split, "files")
                                 else -> sendBadRequest(req)
                             }
                         }
