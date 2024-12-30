@@ -46,6 +46,7 @@ object NotesAppRequestHandler {
                             when (split[3]) {
                                 "images" -> NotesAppFileRequest.getFiles(req, split, "images")
                                 "videos" -> NotesAppFileRequest.getFiles(req, split, "videos")
+                                "files" -> NotesAppFileRequest.getFiles(req, split, "files")
                                 else -> {
                                     if(split[2] == "themes") {
                                         NotesAppThemeRequest.downloadTheme(req, split)
