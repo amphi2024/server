@@ -84,7 +84,7 @@ object NotesAppThemeRequest {
                     sendAuthFailed(req)
                 },
                 onAuthenticated = { token ->
-                    val file = File("users/${token.userId}/notes/notes/${filename}")
+                    val file = File("users/${token.userId}/notes/notes/themes/${filename}")
                     if (!file.exists()) {
                         sendFileNotExists(req)
                     } else {
