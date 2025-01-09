@@ -1,8 +1,8 @@
-package com.amphi.handlers.drive
+package com.amphi.handlers.cloud
 
 import io.vertx.core.http.HttpServerRequest
 
-object DriveAppRequestHandler {
+object CloudAppRequestHandler {
     fun handleRequest(req: HttpServerRequest) {
         when {
             req.path().startsWith("/drive/files") -> {

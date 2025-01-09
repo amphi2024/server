@@ -1,7 +1,7 @@
 package com.amphi
 
 import com.amphi.handlers.*
-import com.amphi.handlers.drive.DriveAppRequestHandler
+import com.amphi.handlers.cloud.CloudAppRequestHandler
 import com.amphi.handlers.notes.NotesAppRequestHandler
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Handler
@@ -26,7 +26,7 @@ class App : AbstractVerticle(), Handler<HttpServerRequest> {
                 path == "/storage" -> StorageHandler.handleStorageInfo(req)
                 path.startsWith("/users") -> UserHandler.handleUserRequest(req)
                 path.startsWith("/notes") -> NotesAppRequestHandler.handleRequest(req)
-                path.startsWith("/drive") -> DriveAppRequestHandler.handleRequest(req)
+                path.startsWith("/cloud") -> CloudAppRequestHandler.handleRequest(req)
             }
         } catch (e: Exception) {
             req.response()

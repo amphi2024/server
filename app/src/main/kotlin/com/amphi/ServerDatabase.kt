@@ -266,7 +266,7 @@ object ServerDatabase {
 
     fun getEvents(token: String, appType: String): JsonArray {
         val jsonArray = JsonArray()
-        val sql = "SELECT action, value, timestamp FROM events WHERE token = ? AND app_type = ? OR app_type IS NULL;"
+        val sql = "SELECT action, value, timestamp FROM events WHERE token = ? AND (app_type = ? OR app_type IS NULL);"
         val statement = connection.prepareStatement(sql)
         statement.setString(1 , token)
         statement.setString(2, appType)
@@ -281,6 +281,8 @@ object ServerDatabase {
 
         resultSet.close()
         statement.close()
+
+        println(jsonArray)
 
         return jsonArray
     }
