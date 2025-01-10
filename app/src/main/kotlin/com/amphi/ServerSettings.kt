@@ -1,8 +1,6 @@
 package com.amphi
 
 import java.io.File
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 object ServerSettings {
 
@@ -17,7 +15,7 @@ object ServerSettings {
     var rateLimitIntervalMinutes = 10
     var rateLimitMaxRequests = 450
 
-    private var logs = StringBuilder()
+    //private var logs = StringBuilder()
     private val whitelist = mutableListOf<String>()
     private val blacklist = mutableListOf<String>()
 

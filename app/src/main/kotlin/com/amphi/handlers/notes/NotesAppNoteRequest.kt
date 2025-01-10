@@ -8,8 +8,6 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
-import java.time.Instant
-import java.time.ZoneId
 
 object NotesAppNoteRequest {
 
@@ -84,8 +82,6 @@ object NotesAppNoteRequest {
                     sendAuthFailed(req)
                 },
                 onAuthenticated = { token ->
-                    val filePath = "users/${token.userId}/notes/notes/${filename}"
-                    //println("download note: ${filePath}")
                     val file = File("users/${token.userId}/notes/notes/${filename}")
                     if (!file.exists()) {
                         sendFileNotExists(req)
