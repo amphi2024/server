@@ -21,9 +21,9 @@ class App : AbstractVerticle(), Handler<HttpServerRequest> {
             val path = req.path()
             when {
                 path == "/" -> {
-                    req.response().putHeader("content-type", "text/plain").end("Server is running. Let's go! (port: ${ServerSettings.port}, version: 1.0.0)")
+                    req.response().putHeader("content-type", "text/plain").end("Server is running. Let's go!")
                 }
-                path == "/version" -> req.response().putHeader("content-type", "text/plain").end("0.0.0")
+                path == "/version" -> req.response().putHeader("content-type", "text/plain").end("1.0.0")
                 path == "/storage" -> StorageHandler.handleStorageInfo(req)
                 path.startsWith("/users") -> UserHandler.handleUserRequest(req)
                 path.startsWith("/notes") -> NotesAppRequestHandler.handleRequest(req)
