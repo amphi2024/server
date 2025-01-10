@@ -10,6 +10,7 @@ import io.vertx.core.http.HttpServerOptions
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.net.PfxOptions
 import java.io.File
+import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -20,7 +21,7 @@ class App : AbstractVerticle(), Handler<HttpServerRequest> {
             val path = req.path()
             when {
                 path == "/" -> {
-                    req.response().putHeader("content-type", "text/plain").end("server is running")
+                    req.response().putHeader("content-type", "text/plain").end("Server is running. Let's go! (port: ${ServerSettings.port}, version: 1.0.0)")
                 }
                 path == "/version" -> req.response().putHeader("content-type", "text/plain").end("0.0.0")
                 path == "/storage" -> StorageHandler.handleStorageInfo(req)
@@ -75,9 +76,9 @@ class App : AbstractVerticle(), Handler<HttpServerRequest> {
                 }
                 else {
                     handle(req)
-                    if(!ServerSettings.inWhiteList(ipAddress)) {
-                       // ServerSettings.writeLog("Request from non-whitelisted IP: $ipAddress")
-                    }
+                   // if(!ServerSettings.inWhiteList(ipAddress)) {
+                     // ServerSettings.writeLog("Request from non-whitelisted IP: $ipAddress")
+                   // }
                 }
             }
             else {
@@ -92,15 +93,10 @@ fun main() {
     val vertx = Vertx.vertx()
     vertx.deployVerticle(App())
 
-    println("Server is running on ${ServerSettings.port} Let's we go!")
+    println("Server is running. Let's go! (port: ${ServerSettings.port}, version: 1.0.0)")
     Runtime.getRuntime().addShutdownHook(Thread {
-        ServerSettings.saveLogs()
         ServerDatabase.close()
     })
-
-//    vertx.setPeriodic(500) {
-//        readCommand()
-//    }
 
     val scheduler = Executors.newScheduledThreadPool(1)
 
@@ -109,7 +105,7 @@ fun main() {
 
             ServerDatabase.syncTokensLastAccess()
             ServerDatabase.deleteObsoleteTokens()
-            ServerSettings.saveLogs()
+            //ServerSettings.saveLogs()
             ServerFileUtils.deleteObsoleteFiles()
         } catch (e: Exception) {
             e.printStackTrace()
@@ -117,106 +113,5 @@ fun main() {
     }
 
     scheduler.scheduleAtFixedRate(task, 0, 1, TimeUnit.DAYS)
-}
-
-
-
-fun readCommand() {
-
-    try {
-        val command = readlnOrNull()
-        if (command != null) {
-            when {
-                command == "version" -> {
-                    println("1.0.0")
-                }
-
-                command.startsWith("block") -> {
-
-                }
-                command == "help settings" -> {
-                    println("port: Port address on which the server is running.")
-                    println("open-registration: When set to true, it allows new user registrations. When set to false, it prevents registrations except for already registered users, thereby reducing security risks.")
-                }
-
-                else -> {
-                    println("version: Show the server version.")
-                    println("set {OPTION}: Changes the server settings. (example: set open-registration:false)")
-                    println("block {IP}: Blocks all requests coming from entered address. (example: block ?.?.?.?)")
-                    println("help settings: Show descriptions for each item in Settings.txt file.")
-                }
-            }
-        }
-    } catch (e: Exception) {
-      //  println(e)
-    }
-
-//    readCommand()
 
 }
-
-
-//                when (req.path()) {
-//                    "/" -> {
-//                        val response = req.response()
-//                        response.putHeader("content-type", "text/plain")
-//                        response.end("Hi")
-//                    }
-//
-//                    "/register" -> UserHandler.handleRegister(req)
-//                    "/login" -> UserHandler.handleLogin(req)
-//                    "/logout" -> UserHandler.handleLogout(req)
-//                    "/rename_user" -> UserHandler.handleRename(req)
-//                    "/change_password" -> UserHandler.handleChangePassword(req)
-//                    "/get_user_ids" -> UserHandler.handleGetUserIds(req)
-//
-//                    "/storage_info" -> StorageHandler.handleStorageInfo(req)
-//
-//                    "/listen_updates" -> WebSocketHandler.handleWebSocket(req)
-//
-//                    "/get_events" -> ServerEventHandler.handleGetEvents(req)
-//                    "/acknowledge_event" -> ServerEventHandler.handleAcknowledgeEvent(req)
-//
-//                    "/upload_note_theme" -> FileRequestHandler.handleFileUpload(req, "notes/themes")
-//                    "/upload_note" -> FileRequestHandler.handleFileUpload(req, "notes/notes")
-//                    "/upload_note_colors" -> FileRequestHandler.handleSimpleFileUpload(req, "notes/colors.json")
-//                    "/upload_note_image" -> FileRequestHandler.handleFileUpload(req, "notes/images")
-//                    "/upload_note_video" -> FileRequestHandler.handleFileUpload(req, "notes/videos")
-//                    "/upload_note_audio" -> FileRequestHandler.handleFileUpload(req, "notes/audios")
-//                    "/upload_music_theme" -> FileRequestHandler.handleFileUpload(req, "music/themes")
-//                    "/upload_song" -> FileRequestHandler.handleFileUpload(req, "music/songs")
-//                    "/upload_music_video" -> FileRequestHandler.handleFileUpload(req, "music/videos")
-//
-//                    "/download_note_theme" -> FileRequestHandler.handleFileDownload(req, "notes/themes")
-//                    "/download_note" -> FileRequestHandler.handleFileDownload(req, "notes/notes")
-//                    "/download_note_colors" -> FileRequestHandler.handleSimpleFileDownload(req, "notes/colors.json")
-//                    "/download_note_image" -> FileRequestHandler.handleFileDownload(req, "notes/images")
-//                    "/download_note_video" -> FileRequestHandler.handleFileDownload(req, "notes/videos")
-//                    "/download_note_audio" -> FileRequestHandler.handleFileDownload(req, "notes/audios")
-//                    "/download_music_theme" -> FileRequestHandler.handleFileDownload(req, "music/themes")
-//                    "/download_song" -> FileRequestHandler.handleFileDownload(req, "music/songs")
-//                    "/download_music_video" -> FileRequestHandler.handleFileDownload(req, "music/videos")
-//
-//                    "/get_note_themes" -> FileRequestHandler.handleGetFile(req, "notes/themes")
-//                    "/get_notes" -> FileRequestHandler.handleGetFile(req, "notes/notes")
-//                    "/get_note_images" -> FileRequestHandler.handleGetFile(req, "notes/images")
-//                    "/get_note_videos" -> FileRequestHandler.handleGetFile(req, "notes/videos")
-//                    "/get_note_audios" -> FileRequestHandler.handleGetFile(req, "notes/audios")
-//                    "/get_music_themes" -> FileRequestHandler.handleGetFile(req, "music/themes")
-//                    "/get_songs" -> FileRequestHandler.handleGetFile(req, "music/songs")
-//                    "/get_music_videos" -> FileRequestHandler.handleGetFile(req, "music/videos")
-//
-//                    "/delete_note_theme" -> FileRequestHandler.handleDeleteFile(req, "notes/themes")
-//                    "/delete_note" -> FileRequestHandler.handleDeleteFile(req, "notes/notes")
-//                    "/delete_note_image" -> FileRequestHandler.handleDeleteFile(req, "notes/images")
-//                    "/delete_note_video" -> FileRequestHandler.handleDeleteFile(req, "notes/videos")
-//                    "/delete_note_audio" -> FileRequestHandler.handleDeleteFile(req, "notes/audios")
-//                    "/delete_music_theme" -> FileRequestHandler.handleDeleteFile(req, "music/themes")
-//                    "/delete_song" -> FileRequestHandler.handleDeleteFile(req, "music/songs")
-//                    "/delete_music_video" -> FileRequestHandler.handleDeleteFile(req, "music/videos")
-//                    else -> {
-//                        req.response()
-//                            .setStatusCode(404)
-//                            .end(Messages.NOT_FOUND)
-//                    }
-//                }

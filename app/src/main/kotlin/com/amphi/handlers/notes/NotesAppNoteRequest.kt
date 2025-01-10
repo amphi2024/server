@@ -85,7 +85,7 @@ object NotesAppNoteRequest {
                 },
                 onAuthenticated = { token ->
                     val filePath = "users/${token.userId}/notes/notes/${filename}"
-                    println("download note: ${filePath}")
+                    //println("download note: ${filePath}")
                     val file = File("users/${token.userId}/notes/notes/${filename}")
                     if (!file.exists()) {
                         sendFileNotExists(req)

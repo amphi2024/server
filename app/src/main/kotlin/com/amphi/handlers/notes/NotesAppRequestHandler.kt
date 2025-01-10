@@ -17,6 +17,7 @@ object NotesAppRequestHandler {
                                 "images" -> NotesAppFileRequest.downloadFile(req, split, "images")
                                 "videos" -> NotesAppFileRequest.downloadFile(req, split, "videos")
                                 "files" -> NotesAppFileRequest.downloadFile(req, split, "files")
+                                "audios" -> NotesAppFileRequest.downloadFile(req, split, "audios")
                                 else -> sendBadRequest(req)
                             }
                         }
@@ -25,6 +26,7 @@ object NotesAppRequestHandler {
                                 "images" -> NotesAppFileRequest.uploadFile(req, split, "images")
                                 "videos" -> NotesAppFileRequest.uploadFile(req, split, "videos")
                                 "files" -> NotesAppFileRequest.uploadFile(req, split, "files")
+                                "audios" -> NotesAppFileRequest.downloadFile(req, split, "audios")
                                 else -> sendBadRequest(req)
                             }
                         }
@@ -33,6 +35,7 @@ object NotesAppRequestHandler {
                                 "images" -> NotesAppFileRequest.deleteFile(req, split, "images")
                                 "videos" -> NotesAppFileRequest.deleteFile(req, split, "videos")
                                 "files" -> NotesAppFileRequest.deleteFile(req, split, "files")
+                                "audios" -> NotesAppFileRequest.downloadFile(req, split, "audios")
                                 else -> sendBadRequest(req)
                             }
                         }
@@ -47,6 +50,7 @@ object NotesAppRequestHandler {
                                 "images" -> NotesAppFileRequest.getFiles(req, split, "images")
                                 "videos" -> NotesAppFileRequest.getFiles(req, split, "videos")
                                 "files" -> NotesAppFileRequest.getFiles(req, split, "files")
+                                "audios" -> NotesAppFileRequest.downloadFile(req, split, "audios")
                                 else -> {
                                     if(split[2] == "themes") {
                                         NotesAppThemeRequest.downloadTheme(req, split)

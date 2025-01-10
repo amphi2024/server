@@ -8,11 +8,8 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
-import java.time.Instant
-import java.time.ZoneId
 
 object NotesAppFileRequest {
-
 
     fun getFiles(req: HttpServerRequest, split: List<String>, directoryName: String) {
         val requestToken = req.headers()["Authorization"]
@@ -38,7 +35,7 @@ object NotesAppFileRequest {
                             val jsonObject = JsonObject()
                             jsonObject.put("filename", file.name)
                             jsonObject.put("modified", file.lastModified()
-                            )  // ex: 2024;7;13;18;30;13
+                            )
                             jsonArray.add(jsonObject)
                         }
                     }
@@ -104,7 +101,6 @@ object NotesAppFileRequest {
                 },
                 onAuthenticated = { token ->
                     val filePath = "users/${token.userId}/notes/notes/${noteFileNameOnly}/${directoryName}/${filename}"
-                    println("download ${directoryName}: ${filePath}")
                     if (!File(filePath).exists()) {
                         sendFileNotExists(req)
                     } else {

@@ -137,19 +137,19 @@ object ServerSettings {
         }
     }
 
-    fun writeLog(message: String) {
-        val currentDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-        val string = "[${currentDateTime}] $message"
-        println(string)
-        logs.appendLine(string)
-        if(logs.lines().size > 100) {
-            saveLogs()
-        }
-    }
-    fun saveLogs() {
-//        val file = File("logs.txt")
-//        file.appendText(logs.toString())
-    }
+//    fun writeLog(message: String) {
+//        val currentDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+//        val string = "[${currentDateTime}] $message"
+//        println(string)
+//        logs.appendLine(string)
+//        if(logs.lines().size > 100) {
+//            saveLogs()
+//        }
+//    }
+//    fun saveLogs() {
+////        val file = File("logs.txt")
+////        file.appendText(logs.toString())
+//    }
 
     fun inBlackList(ipAddress: String): Boolean {
         var result = false
