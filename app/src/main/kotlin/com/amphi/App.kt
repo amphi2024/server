@@ -1,15 +1,13 @@
 package com.amphi
 
-import com.amphi.handlers.*
+import com.amphi.handlers.StorageHandler
+import com.amphi.handlers.UserHandler
 import com.amphi.handlers.cloud.CloudAppRequestHandler
 import com.amphi.handlers.notes.NotesAppRequestHandler
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Handler
 import io.vertx.core.Vertx
-import io.vertx.core.http.HttpServerOptions
 import io.vertx.core.http.HttpServerRequest
-import io.vertx.core.net.PfxOptions
-import java.io.File
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -36,22 +34,23 @@ class App : AbstractVerticle(), Handler<HttpServerRequest> {
     }
 
     override fun start() {
-        val options = HttpServerOptions()
-        if(File(ServerSettings.keystorePath).exists() && ServerSettings.httpsOnly) {
-            try {
-                options.isSsl = true
-                options.setKeyCertOptions(
-                    PfxOptions().
-                    setPath(ServerSettings.keystorePath).
-                    setPassword(ServerSettings.keystorePassword)
-                )
-            } catch (e: Exception) {
-                println("Failed to set up HTTPS: ${e.message}")
-                e.printStackTrace()
-            }
-        }
+      //  val options = HttpServerOptions()
+//        if(File(ServerSettings.keystorePath).exists() && ServerSettings.httpsOnly) {
+//            try {
+//                options.isSsl = true
+//                options.setKeyCertOptions(
+//                    PfxOptions().
+//                    setPath(ServerSettings.keystorePath).
+//                    setPassword(ServerSettings.keystorePassword)
+//                )
+//            } catch (e: Exception) {
+//                println("Failed to set up HTTPS: ${e.message}")
+//                e.printStackTrace()
+//            }
+//        }
+//        vertx.createHttpServer(options)
 
-        vertx.createHttpServer(options).requestHandler{req ->
+        vertx.createHttpServer().requestHandler{req ->
 
             val ipAddress = req.remoteAddress().hostAddress()
             println("request - ip: $ipAddress, ${req.path()} ${req.method().name()}")

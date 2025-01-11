@@ -9,9 +9,9 @@ object ServerSettings {
     var loginExpirationPeriod = 30
     var blockMessage = "you are blocked"
     var whitelistOnly = false
-    var httpsOnly = false
-    var keystorePath = "path/to/your/keystore.p12"
-    var keystorePassword = "your-password"
+//    var httpsOnly = false
+//    var keystorePath = "path/to/your/keystore.p12"
+//    var keystorePassword = "your-password"
     var rateLimitIntervalMinutes = 10
     var rateLimitMaxRequests = 450
 
@@ -52,15 +52,15 @@ object ServerSettings {
                         "rate-limit-max-requests" -> {
                             rateLimitMaxRequests = Integer.parseInt(second)
                         }
-                        "https-only" -> {
-                            httpsOnly = second.toBoolean()
-                        }
-                        "keystore-path" -> {
-                            keystorePath = second
-                        }
-                        "keystore-password" -> {
-                            keystorePassword = second
-                        }
+//                        "https-only" -> {
+//                            httpsOnly = second.toBoolean()
+//                        }
+//                        "keystore-path" -> {
+//                            keystorePath = second
+//                        }
+//                        "keystore-password" -> {
+//                            keystorePassword = second
+//                        }
                     }
                }
 
@@ -87,9 +87,9 @@ object ServerSettings {
         stringBuilder.appendLine("whitelist-only:$whitelistOnly")
         stringBuilder.appendLine("rate-limit-interval-minutes:$rateLimitIntervalMinutes")
         stringBuilder.appendLine("rate-limit-max-requests:$rateLimitMaxRequests")
-        stringBuilder.appendLine("https-only:$httpsOnly")
-        stringBuilder.appendLine("keystore-path:$keystorePath")
-        stringBuilder.append("keystore-password:$keystorePassword")
+//        stringBuilder.appendLine("https-only:$httpsOnly")
+//        stringBuilder.appendLine("keystore-path:$keystorePath")
+//        stringBuilder.append("keystore-password:$keystorePassword")
         file.writeText(stringBuilder.toString())
     }
 
