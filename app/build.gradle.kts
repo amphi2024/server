@@ -33,10 +33,8 @@ dependencies {
     // This dependency is used by the application.
     implementation(libs.guava)
 
-    implementation("io.vertx:vertx-core:4.5.8")
-    implementation("io.vertx:vertx-web-client:4.4.0")
+    implementation("io.vertx:vertx-core:4.5.13")
     implementation("org.xerial:sqlite-jdbc:3.41.2.2")
-    // implementation("io.vertx:vertx-lang-kotlin-coroutines:4.5.8")
     implementation("io.netty:netty-resolver-dns-native-macos:4.1.68.Final:osx-aarch_64")
     implementation("de.mkammerer:argon2-jvm:2.11")
 }
