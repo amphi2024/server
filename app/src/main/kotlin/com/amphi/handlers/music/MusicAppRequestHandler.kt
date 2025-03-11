@@ -85,17 +85,11 @@ object MusicAppRequestHandler {
                 when(req.method().name().uppercase()) {
                     "GET" -> {
                         when (req.path()) {
-                            "/notes/colors" -> NotesAppColorRequest.getColors(req)
-                            "/notes/events" -> ServerEventHandler.handleGetEvents(req, "notes")
-                            "/notes/themes" -> NotesAppThemeRequest.getThemes(req)
-                            "/notes/sync" -> NotesWebSocketHandler.handleWebsocket(req)
                             else -> NotesAppNoteRequest.downloadNote(req, split)
                         }
                     }
                     "POST" -> {
                         when(req.path()) {
-                            "/notes/colors" -> NotesAppColorRequest.uploadColors(req)
-                            "/notes/events" -> ServerEventHandler.handleAcknowledgeEvent(req)
                             else -> NotesAppNoteRequest.uploadNote(req, split)
                         }
                     }
