@@ -29,8 +29,7 @@ object NotesAppThemeRequest {
                     if(oldDirectory.exists()) {
                         oldDirectory.listFiles()?.let {
                             for(file in it) {
-                                println("dddddddd ${"users/${token.userId}/notes/themes/${file.name}"}")
-                                //file.renameTo(File("users/${token.userId}/notes/themes/${file.name}"))
+                                file.renameTo(File("users/${token.userId}/notes/themes/${file.name}"))
                             }
                         }
                     }
