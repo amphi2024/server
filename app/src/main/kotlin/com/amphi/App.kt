@@ -13,7 +13,7 @@ import io.vertx.core.http.HttpServerRequest
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-const val VERSION = "1.0.0"
+const val VERSION = "1.1.0"
 
 class App : AbstractVerticle(), Handler<HttpServerRequest> {
 
