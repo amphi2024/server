@@ -1,4 +1,4 @@
-package com.amphi.handlers.notes
+package com.amphi.handlers.music
 
 import com.amphi.Messages
 import com.amphi.ServerDatabase
@@ -7,7 +7,7 @@ import com.amphi.sendSuccess
 import io.vertx.core.http.HttpServerRequest
 import java.io.File
 
-object NotesAppColorRequest {
+object MusicAppColorRequest {
 
     fun getColors(req: HttpServerRequest) {
         val requestToken = req.headers()["Authorization"]
@@ -20,11 +20,7 @@ object NotesAppColorRequest {
                     sendAuthFailed(req)
                 },
                 onAuthenticated = { token ->
-                    val oldFile = File("users/${token.userId}/notes/notes/colors")
-                    val file = File("users/${token.userId}/notes/colors")
-                    if(oldFile.exists()) {
-                        oldFile.renameTo(file)
-                    }
+                    val file = File("users/${token.userId}/music/colors")
                     if (!file.exists()) {
                         req.response().setStatusCode(404).end(Messages.FILE_NOT_EXISTS)
                     } else {
@@ -50,7 +46,7 @@ object NotesAppColorRequest {
                         sendAuthFailed(req)
                     },
                     onAuthenticated = { token ->
-                        val file = File("users/${token.userId}/notes/colors")
+                        val file = File("users/${token.userId}/music/colors")
                         file.writeText(buffer.toString())
                         ServerDatabase.saveEvent(token = token, action = "upload_colors", value = "", appType = "notes")
 

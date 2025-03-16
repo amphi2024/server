@@ -94,12 +94,16 @@ object NotesAppRequestHandler {
                         "POST" -> {
                             when(req.path()) {
                                 "/notes/colors" -> NotesAppColorRequest.uploadColors(req)
-                                "/notes/events" -> ServerEventHandler.handleAcknowledgeEvent(req)
                                 else -> NotesAppNoteRequest.uploadNote(req, split)
                             }
                         }
                         "DELETE" -> {
-                            NotesAppNoteRequest.deleteNote(req, split)
+                            if(req.path() == "/notes/events") {
+                                ServerEventHandler.handleAcknowledgeEvent(req)
+                            }
+                            else {
+                                NotesAppNoteRequest.deleteNote(req, split)
+                            }
                         }
                         else -> sendNotFound(req)
                     }

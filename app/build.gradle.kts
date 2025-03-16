@@ -37,6 +37,8 @@ dependencies {
     implementation("org.xerial:sqlite-jdbc:3.41.2.2")
     implementation("io.netty:netty-resolver-dns-native-macos:4.1.68.Final:osx-aarch_64")
     implementation("de.mkammerer:argon2-jvm:2.11")
+    implementation("net.jthink:jaudiotagger:3.0.1")
+
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

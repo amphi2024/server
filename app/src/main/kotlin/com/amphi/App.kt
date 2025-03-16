@@ -3,13 +3,17 @@ package com.amphi
 import com.amphi.handlers.StorageHandler
 import com.amphi.handlers.UserHandler
 import com.amphi.handlers.cloud.CloudAppRequestHandler
+import com.amphi.handlers.music.MusicAppRequestHandler
 import com.amphi.handlers.notes.NotesAppRequestHandler
+import com.amphi.handlers.photos.PhotosAppRequestHandler
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Handler
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpServerRequest
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+
+const val VERSION = "1.0.0"
 
 class App : AbstractVerticle(), Handler<HttpServerRequest> {
 
@@ -20,11 +24,14 @@ class App : AbstractVerticle(), Handler<HttpServerRequest> {
                 path == "/" -> {
                     req.response().putHeader("content-type", "text/plain").end("Server is running. Let's go!")
                 }
-                path == "/version" -> req.response().putHeader("content-type", "text/plain").end("1.0.0")
+                path == "/version" -> req.response().putHeader("content-type", "text/plain").end(VERSION)
                 path == "/storage" -> StorageHandler.handleStorageInfo(req)
                 path.startsWith("/users") -> UserHandler.handleUserRequest(req)
                 path.startsWith("/notes") -> NotesAppRequestHandler.handleRequest(req)
+                path.startsWith("/music") -> MusicAppRequestHandler.handleRequest(req)
                 path.startsWith("/cloud") -> CloudAppRequestHandler.handleRequest(req)
+                path.startsWith("/photos") -> PhotosAppRequestHandler.handleRequest(req)
+                else -> sendNotFound(req)
             }
         } catch (e: Exception) {
             req.response()
@@ -34,21 +41,6 @@ class App : AbstractVerticle(), Handler<HttpServerRequest> {
     }
 
     override fun start() {
-      //  val options = HttpServerOptions()
-//        if(File(ServerSettings.keystorePath).exists() && ServerSettings.httpsOnly) {
-//            try {
-//                options.isSsl = true
-//                options.setKeyCertOptions(
-//                    PfxOptions().
-//                    setPath(ServerSettings.keystorePath).
-//                    setPassword(ServerSettings.keystorePassword)
-//                )
-//            } catch (e: Exception) {
-//                println("Failed to set up HTTPS: ${e.message}")
-//                e.printStackTrace()
-//            }
-//        }
-//        vertx.createHttpServer(options)
 
         vertx.createHttpServer().requestHandler{req ->
 
@@ -74,9 +66,6 @@ class App : AbstractVerticle(), Handler<HttpServerRequest> {
                 }
                 else {
                     handle(req)
-                   // if(!ServerSettings.inWhiteList(ipAddress)) {
-                     // ServerSettings.writeLog("Request from non-whitelisted IP: $ipAddress")
-                   // }
                 }
             }
             else {
@@ -86,12 +75,13 @@ class App : AbstractVerticle(), Handler<HttpServerRequest> {
     }.listen(ServerSettings.port)
     }
 }
+
 fun main() {
 
     val vertx = Vertx.vertx()
     vertx.deployVerticle(App())
 
-    println("Server is running. Let's go! (port: ${ServerSettings.port}, version: 1.0.0)")
+    println("Server is running. Let's go! (port: ${ServerSettings.port}, version: $VERSION)")
     Runtime.getRuntime().addShutdownHook(Thread {
         ServerDatabase.close()
     })

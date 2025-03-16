@@ -1,4 +1,4 @@
-package com.amphi.handlers.notes
+package com.amphi.handlers.music
 
 import com.amphi.*
 import io.vertx.core.http.HttpServerRequest
@@ -9,7 +9,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 
-object NotesAppThemeRequest {
+object MusicAppThemeRequest {
 
     fun getThemes(req: HttpServerRequest) {
         val requestToken = req.headers()["Authorization"]
@@ -24,16 +24,7 @@ object NotesAppThemeRequest {
                 },
                 onAuthenticated = { token ->
                     val jsonArray = JsonArray()
-                    val directory = File("users/${token.userId}/notes/themes")
-                    val oldDirectory = File("users/${token.userId}/notes/notes/themes")
-                    if(oldDirectory.exists()) {
-                        oldDirectory.listFiles()?.let {
-                            for(file in it) {
-                                println("dddddddd ${"users/${token.userId}/notes/themes/${file.name}"}")
-                                //file.renameTo(File("users/${token.userId}/notes/themes/${file.name}"))
-                            }
-                        }
-                    }
+                    val directory = File("users/${token.userId}/music/themes")
                     if (!directory.exists()) {
                         directory.mkdirs()
                     }
@@ -67,12 +58,7 @@ object NotesAppThemeRequest {
                         sendAuthFailed(req)
                     },
                     onAuthenticated = { token ->
-                        val directory = File("users/${token.userId}/notes/themes")
-                        if (!directory.exists()) {
-                            directory.mkdirs()
-                        }
-
-                        val file = File("users/${token.userId}/notes/themes/${filename}")
+                        val file = File("users/${token.userId}/music/themes/${filename}")
                         file.writeText(buffer.toString())
                         ServerDatabase.saveEvent(token = token, action = "upload_theme", value = filename, appType = "notes")
 
@@ -96,11 +82,7 @@ object NotesAppThemeRequest {
                     sendAuthFailed(req)
                 },
                 onAuthenticated = { token ->
-                    val directory = File("users/${token.userId}/notes/themes")
-                    if (!directory.exists()) {
-                        directory.mkdirs()
-                    }
-                    val file = File("users/${token.userId}/notes/themes/${filename}")
+                    val file = File("users/${token.userId}/music/themes/${filename}")
                     if (!file.exists()) {
                         sendFileNotExists(req)
                     } else {
@@ -123,12 +105,8 @@ object NotesAppThemeRequest {
                     sendAuthFailed(req)
                 },
                 onAuthenticated = { token ->
-                    val directory = File("users/${token.userId}/notes/themes")
-                    if (!directory.exists()) {
-                        directory.mkdirs()
-                    }
-                    val file = File("users/${token.userId}/notes/themes/$filename")
-                    val trashes = File("users/${token.userId}/trashes/notes/themes")
+                    val file = File("users/${token.userId}/music/themes/$filename")
+                    val trashes = File("users/${token.userId}/trashes/music/themes")
                     if (!trashes.exists()) {
                         trashes.mkdirs()
                     }

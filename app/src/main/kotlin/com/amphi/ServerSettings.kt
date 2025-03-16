@@ -9,13 +9,9 @@ object ServerSettings {
     var loginExpirationPeriod = 30
     var blockMessage = "you are blocked"
     var whitelistOnly = false
-//    var httpsOnly = false
-//    var keystorePath = "path/to/your/keystore.p12"
-//    var keystorePassword = "your-password"
     var rateLimitIntervalMinutes = 10
     var rateLimitMaxRequests = 450
 
-    //private var logs = StringBuilder()
     private val whitelist = mutableListOf<String>()
     private val blacklist = mutableListOf<String>()
 
@@ -52,15 +48,6 @@ object ServerSettings {
                         "rate-limit-max-requests" -> {
                             rateLimitMaxRequests = Integer.parseInt(second)
                         }
-//                        "https-only" -> {
-//                            httpsOnly = second.toBoolean()
-//                        }
-//                        "keystore-path" -> {
-//                            keystorePath = second
-//                        }
-//                        "keystore-password" -> {
-//                            keystorePassword = second
-//                        }
                     }
                }
 
@@ -87,9 +74,6 @@ object ServerSettings {
         stringBuilder.appendLine("whitelist-only:$whitelistOnly")
         stringBuilder.appendLine("rate-limit-interval-minutes:$rateLimitIntervalMinutes")
         stringBuilder.appendLine("rate-limit-max-requests:$rateLimitMaxRequests")
-//        stringBuilder.appendLine("https-only:$httpsOnly")
-//        stringBuilder.appendLine("keystore-path:$keystorePath")
-//        stringBuilder.append("keystore-password:$keystorePassword")
         file.writeText(stringBuilder.toString())
     }
 
@@ -134,20 +118,6 @@ object ServerSettings {
             println("Unable to read the whitelist file.")
         }
     }
-
-//    fun writeLog(message: String) {
-//        val currentDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-//        val string = "[${currentDateTime}] $message"
-//        println(string)
-//        logs.appendLine(string)
-//        if(logs.lines().size > 100) {
-//            saveLogs()
-//        }
-//    }
-//    fun saveLogs() {
-////        val file = File("logs.txt")
-////        file.appendText(logs.toString())
-//    }
 
     fun inBlackList(ipAddress: String): Boolean {
         var result = false
