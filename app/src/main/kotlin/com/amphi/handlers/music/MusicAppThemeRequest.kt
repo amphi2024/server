@@ -60,7 +60,7 @@ object MusicAppThemeRequest {
                     onAuthenticated = { token ->
                         val file = File("users/${token.userId}/music/themes/${filename}")
                         file.writeText(buffer.toString())
-                        ServerDatabase.saveEvent(token = token, action = "upload_theme", value = filename, appType = "notes")
+                        ServerDatabase.saveEvent(token = token, action = "upload_theme", value = filename, appType = "music")
 
                         sendSuccess(req)
                     }
@@ -121,7 +121,7 @@ object MusicAppThemeRequest {
                             token = token,
                             action = "delete_theme",
                             value = filename,
-                            appType = "notes"
+                            appType = "music"
                         )
                         req.response().end(Messages.SUCCESS)
                     } else {

@@ -1,7 +1,6 @@
 package com.amphi.handlers.music
 
 import com.amphi.handlers.ServerEventHandler
-import com.amphi.handlers.notes.*
 import com.amphi.sendBadRequest
 import com.amphi.sendNotFound
 import io.vertx.core.http.HttpServerRequest
@@ -68,7 +67,7 @@ object MusicAppRequestHandler {
                             "/music/artists" -> MusicAppArtistsRequest.getArtists(req)
                             "/music/albums" -> MusicAppAlbumsRequest.getAlbums(req)
                             "/music/playlists" -> MusicAppPlaylistsRequest.getPlaylists(req)
-                            else -> NotesAppNoteRequest.downloadNote(req, split)
+                            else -> sendNotFound(req)
                         }
                     }
                     "POST" -> {
@@ -88,7 +87,6 @@ object MusicAppRequestHandler {
             }
             2 -> {   //   ex: /music
                 when(req.method().name().uppercase()) {
-                    "GET" -> NotesAppNoteRequest.getNotes(req)
                     else -> sendNotFound(req)
                 }
             }
