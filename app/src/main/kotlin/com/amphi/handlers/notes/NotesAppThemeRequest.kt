@@ -25,14 +25,6 @@ object NotesAppThemeRequest {
                 onAuthenticated = { token ->
                     val jsonArray = JsonArray()
                     val directory = File("users/${token.userId}/notes/themes")
-                    val oldDirectory = File("users/${token.userId}/notes/notes/themes")
-                    if(oldDirectory.exists()) {
-                        oldDirectory.listFiles()?.let {
-                            for(file in it) {
-                                file.renameTo(File("users/${token.userId}/notes/themes/${file.name}"))
-                            }
-                        }
-                    }
                     if (!directory.exists()) {
                         directory.mkdirs()
                     }

@@ -20,11 +20,7 @@ object NotesAppColorRequest {
                     sendAuthFailed(req)
                 },
                 onAuthenticated = { token ->
-                    val oldFile = File("users/${token.userId}/notes/notes/colors")
                     val file = File("users/${token.userId}/notes/colors")
-                    if(oldFile.exists()) {
-                        oldFile.renameTo(file)
-                    }
                     if (!file.exists()) {
                         req.response().setStatusCode(404).end(Messages.FILE_NOT_EXISTS)
                     } else {

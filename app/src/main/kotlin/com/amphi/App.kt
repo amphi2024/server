@@ -13,7 +13,7 @@ import io.vertx.core.http.HttpServerRequest
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-const val VERSION = "1.1.0"
+const val VERSION = "1.1.0 Beta"
 
 class App : AbstractVerticle(), Handler<HttpServerRequest> {
 
@@ -93,8 +93,7 @@ fun main() {
 
             ServerDatabase.syncTokensLastAccess()
             ServerDatabase.deleteObsoleteTokens()
-            //ServerSettings.saveLogs()
-            ServerFileUtils.deleteObsoleteFiles()
+            ServerFileUtils.organizeFiles()
         } catch (e: Exception) {
             e.printStackTrace()
         }
