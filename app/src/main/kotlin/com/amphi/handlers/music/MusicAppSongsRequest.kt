@@ -9,4 +9,8 @@ object MusicAppSongsRequest {
         sendNotFound(req)
     }
 
+    fun uploadSong(req: HttpServerRequest) {
+
+    }
+
 }
