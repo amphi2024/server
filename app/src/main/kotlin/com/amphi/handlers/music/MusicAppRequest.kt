@@ -1,19 +1,26 @@
 package com.amphi.handlers.music
 
 import com.amphi.*
+import com.amphi.models.Token
 import io.vertx.core.http.HttpServerRequest
+import io.vertx.core.json.JsonArray
+import io.vertx.core.json.JsonObject
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 
-object MusicAppPlaylistsRequest {
+interface MusicAppRequest {
 
-    fun getPlaylists(req: HttpServerRequest) {
-        sendNotFound(req)
+    fun item(token: Token, id: String, directoryName: String) : File {
+        val directory = File("users/${token.userId}/music/${directoryName}/${id.substring(0, 1)}/ ${id.substring(1, 2)}/$id")
+        if (!directory.exists()) {
+            directory.mkdirs()
+        }
+        return directory
     }
 
-    fun getPlaylist(req: HttpServerRequest, split: List<String>) {
+    fun getFilesOfSomething(req: HttpServerRequest, split: List<String>, directoryName: String) {
         val requestToken = req.headers()["Authorization"]
         val id = split[3]
         if(requestToken.isNullOrBlank()) {
@@ -26,9 +33,42 @@ object MusicAppPlaylistsRequest {
                     sendAuthFailed(req)
                 },
                 onAuthenticated = { token ->
-                    val file = File("users/${token.userId}/music/playlists/$id.playlist")
+                    val jsonArray = JsonArray()
+                    val directory = item(token, id, directoryName)
+                    val files = directory.listFiles()
+                    if (files != null) {
+                        for (file in files) {
+                            if(file.name != "info.json") {
+                                val jsonObject = JsonObject()
+                                jsonObject.put("filename", file.name)
+                                jsonObject.put("modified", file.lastModified())
+                                jsonArray.add(jsonObject)
+                            }
+                        }
+                    }
+                    req.response().putHeader("content-type", "application/json").end(jsonArray.encode())
+                }
+            )
+        }
+    }
+
+    fun getInfo(req: HttpServerRequest, split: List<String>, directoryName: String) {
+        val requestToken = req.headers()["Authorization"]
+        val id = split[3]
+        if(requestToken.isNullOrBlank()) {
+            sendAuthFailed(req)
+        }
+        else {
+            ServerDatabase.authenticateByToken(
+                token = requestToken,
+                onFailed = {
+                    sendAuthFailed(req)
+                },
+                onAuthenticated = { token ->
+                    val directory = item(token, id, directoryName)
+                    val infoFile = File("${directory.path}/info.json")
                     try {
-                        req.response().putHeader("content-type", "application/json").end(file.readText())
+                        req.response().putHeader("content-type", "application/json").end(infoFile.readText())
                     }
                     catch (e: Exception) {
                         sendNotFound(req)
@@ -38,7 +78,7 @@ object MusicAppPlaylistsRequest {
         }
     }
 
-    fun uploadPlaylist(req: HttpServerRequest, split: List<String>) {
+    fun uploadInfo(req: HttpServerRequest, split: List<String>, directoryName: String, eventName: String) {
         val requestToken = req.headers()["Authorization"]
         val id = split[3]
         if(requestToken.isNullOrBlank()) {
@@ -53,9 +93,11 @@ object MusicAppPlaylistsRequest {
                         sendAuthFailed(req)
                     },
                     onAuthenticated = { token ->
-                        val file = File("users/${token.userId}/music/playlists/$id.playlist")
+                        val directory =  item(token, id, directoryName)
+
+                        val file = File("${directory.path}/info.json")
                         file.writeText(buffer.toString())
-                        ServerDatabase.saveEvent(token = token, action = "upload_playlist", value = id, appType = "music")
+                        ServerDatabase.saveEvent(token = token, action = "upload_song_info", value = id, appType = "music")
 
                         sendSuccess(req)
                     }
@@ -64,7 +106,9 @@ object MusicAppPlaylistsRequest {
         }
     }
 
-    fun uploadPlaylistThumbnail(req: HttpServerRequest, split: List<String>) {
+    // /music/songs/my-song/my-file.lyrics
+    // /music/songs/my-song/my-file.mp3
+    fun uploadFile(req: HttpServerRequest, split: List<String>, directoryName: String, eventName: String) {
         val requestToken = req.headers()["Authorization"]
         val id = split[3]
         val filename = split[4]
@@ -82,11 +126,11 @@ object MusicAppPlaylistsRequest {
                         println(requestToken)
                     },
                     onAuthenticated = { token ->
-                        val file = File("users/${token.userId}/music/playlists/$id/$filename")
+                        val directory = item(token, id, directoryName)
 
-                        upload.streamToFileSystem(file.path).onComplete { ar ->
+                        upload.streamToFileSystem("${directory.path}/${filename}").onComplete { ar ->
                             if (ar.succeeded()) {
-                                ServerDatabase.saveEvent(token = token, action = "upload_playlist_thumbnail", value = filename, appType = "music")
+                                ServerDatabase.saveEvent(token = token, action = eventName, value = filename, appType = "music")
                                 sendSuccess(req)
                             } else {
                                 sendUploadFailed(req)
@@ -102,7 +146,9 @@ object MusicAppPlaylistsRequest {
         }
     }
 
-    fun deletePlaylist(req: HttpServerRequest, split: List<String>) {
+    // /music/songs/my-song/my-file.lyrics
+    // /music/songs/my-song/my-file.mp3
+    fun delete(req: HttpServerRequest, split: List<String>, directoryName: String, eventName: String) {
         val requestToken = req.headers()["Authorization"]
         val filename = split[3]
         if (requestToken.isNullOrBlank()) {
@@ -114,21 +160,21 @@ object MusicAppPlaylistsRequest {
                     sendAuthFailed(req)
                 },
                 onAuthenticated = { token ->
-                    val file = File("users/${token.userId}/music/playlists/${filename}.playlist")
-                    val trashes = File("users/${token.userId}/trashes/music/playlists")
+                    val file = File("users/${token.userId}/music/${directoryName}/${filename.substring(0, 1)}/${filename.substring(1, 2)}/${filename}")
+                    val trashes = File("users/${token.userId}/trashes/music/${directoryName}")
                     if (!trashes.exists()) {
                         trashes.mkdirs()
                     }
                     if (file.exists()) {
                         Files.move(
                             file.toPath(),
-                            Paths.get("${trashes.path}/${filename}.playlist"),
+                            Paths.get("${trashes.path}/${filename}"),
                             StandardCopyOption.REPLACE_EXISTING
                         )
-                        ServerDatabase.notifyFileDelete("${trashes.path}/${filename}.playlist")
+                        ServerDatabase.notifyFileDelete("${trashes.path}/${filename}")
                         ServerDatabase.saveEvent(
                             token = token,
-                            action = "delete_playlist",
+                            action = eventName,
                             value = filename,
                             appType = "music"
                         )
@@ -142,5 +188,4 @@ object MusicAppPlaylistsRequest {
 
         }
     }
-
 }

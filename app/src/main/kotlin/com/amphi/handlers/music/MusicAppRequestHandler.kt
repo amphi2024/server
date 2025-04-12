@@ -13,17 +13,29 @@ object MusicAppRequestHandler {
             5 -> {  //    ex: /music/songs/{song1}/{file1}
                 when(req.method().name().uppercase()) {
                     "GET" -> {
-                        when (split[3]) {
+                        when (split[2]) {
+                            "songs" -> {
+                                if(split[4] == "files") {
+                                    MusicAppSongsRequest.getFilesOfSong(req, split)
+                                }
+                                else {
+
+                                }
+                            }
                             else -> sendBadRequest(req)
                         }
                     }
                     "POST" -> {
-                        when (split[3]) {
+                        when (split[2]) {
+                            "songs" ->  MusicAppSongsRequest.uploadSongFile(req, split)
+                            "artists" ->  MusicAppArtistsRequest.uploadArtistFile(req, split)
+                            "albums" ->  MusicAppAlbumsRequest.uploadAlbumCover(req, split)
+                            "playlists" ->  MusicAppPlaylistsRequest.uploadPlaylistThumbnail(req, split)
                             else -> sendBadRequest(req)
                         }
                     }
                     "DELETE" -> {
-                        when (split[3]) {
+                        when (split[2]) {
                             else -> sendBadRequest(req)
                         }
                     }
@@ -34,22 +46,32 @@ object MusicAppRequestHandler {
                 when(req.method().name().uppercase()) {
                     "GET" -> {
                         when (split[2]) {
+                            "songs" ->  MusicAppSongsRequest.getSongInfo(req, split)
+                            "artists" ->  MusicAppArtistsRequest.getArtistInfo(req, split)
+                            "albums" -> MusicAppAlbumsRequest.getAlbumInfo(req, split)
+                            "playlists" -> MusicAppPlaylistsRequest.getPlaylist(req, split)
                             "themes" -> MusicAppThemeRequest.downloadTheme(req, split)
                             else -> sendNotFound(req)
                         }
                     }
                     "POST" -> {
                         when (split[2]) {
+                            "songs" ->  MusicAppSongsRequest.uploadSongInfo(req, split)
+                            "artists" ->  MusicAppArtistsRequest.uploadArtistInfo(req, split)
+                            "albums" -> MusicAppAlbumsRequest.uploadAlbumInfo(req, split)
+                            "playlists" -> MusicAppPlaylistsRequest.uploadPlaylist(req, split)
                             "themes" ->  MusicAppThemeRequest.uploadTheme(req, split)
                             else -> sendNotFound(req)
                         }
                     }
                     "DELETE" -> {
-                        if(split[2] == "themes") {
-                            MusicAppThemeRequest.deleteTheme(req, split)
-                        }
-                        else {
-                            sendNotFound(req)
+                        when(split[2]) {
+                            "songs" -> MusicAppSongsRequest.deleteSong(req, split)
+                            "artists" ->  MusicAppArtistsRequest.deleteArtist(req, split)
+                            "albums" -> MusicAppAlbumsRequest.deleteAlbum(req, split)
+                            "playlists" -> MusicAppPlaylistsRequest.deletePlaylist(req, split)
+                            "themes" -> MusicAppThemeRequest.deleteTheme(req, split)
+                            else -> sendNotFound(req)
                         }
                     }
                     else -> sendNotFound(req)
