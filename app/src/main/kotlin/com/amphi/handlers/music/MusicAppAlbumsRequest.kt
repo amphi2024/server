@@ -26,18 +26,19 @@ object MusicAppAlbumsRequest : MusicAppRequest {
                 },
                 onAuthenticated = { token ->
                     val jsonArray = JsonArray()
-                    val directory =  File("users/${token.userId}/music/albums/${id.substring(0, 1)}/${id.substring(1, 2)}/$id/covers")
+                    val directory =  File("users/${token.userId}/music/albums/${id.substring(0, 1)}/${id.substring(1, 2)}/$id")
                     if(!directory.exists()) {
                         directory.mkdirs()
                     }
                     val files = directory.listFiles()
                     if (files != null) {
                         for (file in files) {
+                            if(file.name != "info.json") {
                                 val jsonObject = JsonObject()
                                 jsonObject.put("filename", file.name)
                                 jsonObject.put("modified", file.lastModified())
                                 jsonArray.add(jsonObject)
-
+                            }
                         }
                     }
                     req.response().putHeader("content-type", "application/json; charset=UTF-8").end(jsonArray.encode())
@@ -77,69 +78,11 @@ object MusicAppAlbumsRequest : MusicAppRequest {
     }
 
     fun uploadAlbumCover(req: HttpServerRequest, split: List<String>) {
-        val requestToken = req.headers()["Authorization"]
-        val id = split[3]
-        val filename = split[5]
-        if(requestToken.isNullOrBlank()) {
-            sendAuthFailed(req)
-        }
-        else {
-            req.setExpectMultipart(true)
-            req.uploadHandler { upload ->
-
-                ServerDatabase.authenticateByToken(
-                    token = requestToken,
-                    onFailed = {
-                        sendAuthFailed(req)
-                        println(requestToken)
-                    },
-                    onAuthenticated = { token ->
-                        val directory = item(token, id, "albums")
-                        val coversDir = File("${directory.path}/covers")
-                        if(!coversDir.exists()) {
-                            coversDir.mkdirs()
-                        }
-                        upload.streamToFileSystem("${directory.path}/covers/${filename}").onComplete { ar ->
-                            if (ar.succeeded()) {
-                                ServerDatabase.saveEvent(token = token, action = "upload_album_cover", value = filename, appType = "music")
-                                sendSuccess(req)
-                            } else {
-                                sendUploadFailed(req)
-                            }
-                        }
-                    }
-                )
-
-            }
-            req.exceptionHandler {
-                sendUploadFailed(req)
-            }
-        }
+        uploadFile(req, split, "albums", "upload_album_cover")
     }
 
     fun downloadAlbumCover(req: HttpServerRequest, split: List<String>) {
-        val requestToken = req.headers()["Authorization"]
-        val id = split[3]
-        val filename = split[5]
-        if(requestToken.isNullOrBlank()) {
-            sendAuthFailed(req)
-        }
-        else {
-            ServerDatabase.authenticateByToken(
-                token = requestToken,
-                onFailed = {
-                    sendAuthFailed(req)
-                },
-                onAuthenticated = { token ->
-                    val filePath = "users/${token.userId}/music/albums/${id.substring(0, 1)}/${id.substring(1, 2)}/${id}/covers/${filename}"
-                    if (!File(filePath).exists()) {
-                        sendFileNotExists(req)
-                    } else {
-                        req.response().putHeader("content-type", "application/octet-stream").sendFile(filePath)
-                    }
-                }
-            )
-        }
+        downloadFile(req, split, "albums")
     }
 
     fun deleteAlbum(req: HttpServerRequest, split: List<String>) {

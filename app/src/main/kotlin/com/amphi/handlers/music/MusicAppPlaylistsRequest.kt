@@ -127,7 +127,7 @@ object MusicAppPlaylistsRequest {
     fun uploadPlaylistThumbnail(req: HttpServerRequest, split: List<String>) {
         val requestToken = req.headers()["Authorization"]
         val id = split[3]
-        val filename = split[5]
+        val filename = split[4]
         if(requestToken.isNullOrBlank()) {
             sendAuthFailed(req)
         }
@@ -165,7 +165,7 @@ object MusicAppPlaylistsRequest {
     fun downloadPlaylistThumbnail(req: HttpServerRequest, split: List<String>) {
         val requestToken = req.headers()["Authorization"]
         val id = split[3]
-        val filename = split[5]
+        val filename = split[4]
         if(requestToken.isNullOrBlank()) {
             sendAuthFailed(req)
         }
