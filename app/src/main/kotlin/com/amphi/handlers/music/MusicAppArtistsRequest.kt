@@ -6,7 +6,11 @@ import io.vertx.core.http.HttpServerRequest
 object MusicAppArtistsRequest : MusicAppRequest {
 
     fun getArtists(req: HttpServerRequest) {
-        sendNotFound(req)
+        getItems(req, "artists")
+    }
+
+    fun getArtistFiles(req: HttpServerRequest, split: List<String>) {
+        getFilesOfSomething(req, split, "artists")
     }
 
     fun getArtistInfo(req: HttpServerRequest, split: List<String>) {
@@ -19,6 +23,10 @@ object MusicAppArtistsRequest : MusicAppRequest {
 
     fun uploadArtistFile(req: HttpServerRequest, split: List<String>) {
         uploadFile(req, split, "artists", "upload_artist_file")
+    }
+
+    fun downloadArtistFile(req: HttpServerRequest, split: List<String>) {
+        downloadFile(req, split, "artists")
     }
 
     fun deleteArtist(req: HttpServerRequest, split: List<String>) {

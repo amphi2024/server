@@ -13,11 +13,41 @@ import java.nio.file.StandardCopyOption
 interface MusicAppRequest {
 
     fun item(token: Token, id: String, directoryName: String) : File {
-        val directory = File("users/${token.userId}/music/${directoryName}/${id.substring(0, 1)}/ ${id.substring(1, 2)}/$id")
+        val directory = File("users/${token.userId}/music/${directoryName}/${id.substring(0, 1)}/${id.substring(1, 2)}/$id")
         if (!directory.exists()) {
             directory.mkdirs()
         }
         return directory
+    }
+
+    fun getItems(req: HttpServerRequest, directoryName: String) {
+        val requestToken = req.headers()["Authorization"]
+        if(requestToken.isNullOrBlank()) {
+            sendAuthFailed(req)
+        }
+        else {
+            ServerDatabase.authenticateByToken(
+                token = requestToken,
+                onFailed = {
+                    sendAuthFailed(req)
+                },
+                onAuthenticated = { token ->
+                    val jsonArray = JsonArray()
+                    val directory = File("users/${token.userId}/music/${directoryName}")
+                    if (!directory.exists()) {
+                        directory.mkdirs()
+                    }
+                    directory.listFiles()?.forEach { subDir ->  //    /music/songs/a
+                        subDir.listFiles()?.forEach { subDir2 -> //    /music/songs/a/b
+                            subDir2.listFiles()?.forEach { file -> //    /music/songs/a/b/{abMusic}
+                                jsonArray.add(file.name)
+                            }
+                        }
+                    }
+                    req.response().putHeader("content-type", "application/json; charset=UTF-8").end(jsonArray.encode())
+                }
+            )
+        }
     }
 
     fun getFilesOfSomething(req: HttpServerRequest, split: List<String>, directoryName: String) {
@@ -46,7 +76,7 @@ interface MusicAppRequest {
                             }
                         }
                     }
-                    req.response().putHeader("content-type", "application/json").end(jsonArray.encode())
+                    req.response().putHeader("content-type", "application/json; charset=UTF-8").end(jsonArray.encode())
                 }
             )
         }
@@ -68,7 +98,7 @@ interface MusicAppRequest {
                     val directory = item(token, id, directoryName)
                     val infoFile = File("${directory.path}/info.json")
                     try {
-                        req.response().putHeader("content-type", "application/json").end(infoFile.readText())
+                        req.response().putHeader("content-type", "application/json; charset=UTF-8").end(infoFile.readText())
                     }
                     catch (e: Exception) {
                         sendNotFound(req)
@@ -123,7 +153,6 @@ interface MusicAppRequest {
                     token = requestToken,
                     onFailed = {
                         sendAuthFailed(req)
-                        println(requestToken)
                     },
                     onAuthenticated = { token ->
                         val directory = item(token, id, directoryName)
@@ -145,6 +174,34 @@ interface MusicAppRequest {
             }
         }
     }
+
+    // /music/songs/my-song/my-file.lyrics
+    // /music/albums/my-album/my-cover.jpg
+    fun downloadFile(req: HttpServerRequest, split: List<String>, directoryName: String) {
+        val requestToken = req.headers()["Authorization"]
+        val id = split[3]
+        val filename = split[4]
+        if(requestToken.isNullOrBlank()) {
+            sendAuthFailed(req)
+        }
+        else {
+            ServerDatabase.authenticateByToken(
+                token = requestToken,
+                onFailed = {
+                    sendAuthFailed(req)
+                },
+                onAuthenticated = { token ->
+                    val filePath = "users/${token.userId}/music/${directoryName}/${id.substring(0, 1)}/${id.substring(1, 2)}/${id}/${filename}"
+                    if (!File(filePath).exists()) {
+                        sendFileNotExists(req)
+                    } else {
+                        req.response().putHeader("content-type", "application/octet-stream").sendFile(filePath)
+                    }
+                }
+            )
+        }
+    }
+
 
     // /music/songs/my-song/my-file.lyrics
     // /music/songs/my-song/my-file.mp3

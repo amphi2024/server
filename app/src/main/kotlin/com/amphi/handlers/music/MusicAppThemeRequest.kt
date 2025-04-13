@@ -37,7 +37,7 @@ object MusicAppThemeRequest {
                             jsonArray.add(jsonObject)
                         }
                     }
-                    req.response().putHeader("content-type", "application/json").end(jsonArray.encode())
+                    req.response().putHeader("content-type", "application/json; charset=UTF-8").end(jsonArray.encode())
                 }
             )
         }
@@ -86,7 +86,7 @@ object MusicAppThemeRequest {
                     if (!file.exists()) {
                         sendFileNotExists(req)
                     } else {
-                        req.response().putHeader("content-type", "application/json").end(file.readText())
+                        req.response().putHeader("content-type", "application/json; charset=UTF-8").end(file.readText())
                     }
                 }
             )

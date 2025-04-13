@@ -21,7 +21,7 @@ object ServerEventHandler {
                 onAuthenticated = {
                     ServerDatabase.syncTokensLastAccess()
                     val jsonArray = ServerDatabase.getEvents(requestToken, appType)
-                    req.response().putHeader("content-type", "application/json").end(jsonArray.encode())
+                    req.response().putHeader("content-type", "application/json; charset=UTF-8").end(jsonArray.encode())
                 }
             )
 

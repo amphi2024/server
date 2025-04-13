@@ -179,6 +179,6 @@ object UserHandler {
     }
 
     private fun handleGetUserIds(req: HttpServerRequest) {
-        req.response().putHeader("content-type", "application/json").end(ServerDatabase.getUserIds().encode())
+        req.response().putHeader("content-type", "application/json; charset=UTF-8").end(ServerDatabase.getUserIds().encode())
     }
 }

@@ -24,7 +24,7 @@ object NotesAppColorRequest {
                     if (!file.exists()) {
                         req.response().setStatusCode(404).end(Messages.FILE_NOT_EXISTS)
                     } else {
-                        req.response().putHeader("content-type", "application/json").end(file.readText())
+                        req.response().putHeader("content-type", "application/json; charset=UTF-8").end(file.readText())
                     }
                 }
             )

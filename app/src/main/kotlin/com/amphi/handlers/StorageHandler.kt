@@ -55,7 +55,7 @@ object StorageHandler {
         jsonObject.put("used", usedSpace)
 
         val response = req.response()
-        response.putHeader("content-type", "application/json")
+        response.putHeader("content-type", "application/json; charset=UTF-8")
         response.end(jsonObject.encode())
     }
 }

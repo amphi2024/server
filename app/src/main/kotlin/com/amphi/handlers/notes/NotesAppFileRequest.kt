@@ -39,7 +39,7 @@ object NotesAppFileRequest {
                             jsonArray.add(jsonObject)
                         }
                     }
-                    req.response().putHeader("content-type", "application/json").end(jsonArray.encode())
+                    req.response().putHeader("content-type", "application/json; charset=UTF-8").end(jsonArray.encode())
                 }
             )
         }

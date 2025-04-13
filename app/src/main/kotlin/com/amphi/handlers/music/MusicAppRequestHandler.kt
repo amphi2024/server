@@ -10,7 +10,7 @@ object MusicAppRequestHandler {
 
         val split = req.path().split("/")
         when (split.size) {
-            5 -> {  //    ex: /music/songs/{song1}/{file1}
+            5 -> {  //    ex: /music/songs/{song1}/files, /music/songs/{song1}/{file.mp3}
                 when(req.method().name().uppercase()) {
                     "GET" -> {
                         when (split[2]) {
@@ -19,7 +19,31 @@ object MusicAppRequestHandler {
                                     MusicAppSongsRequest.getFilesOfSong(req, split)
                                 }
                                 else {
-
+                                    MusicAppSongsRequest.downloadSongFile(req, split)
+                                }
+                            }
+                            "artists" -> {
+                                if(split[4] == "files") {
+                                    MusicAppArtistsRequest.getArtistFiles(req, split)
+                                }
+                                else {
+                                    MusicAppArtistsRequest.downloadArtistFile(req, split)
+                                }
+                            }
+                            "albums" -> {
+                                if(split[4] == "covers") {
+                                    MusicAppAlbumsRequest.getAlbumCovers(req, split)
+                                }
+                                else {
+                                    MusicAppAlbumsRequest.downloadAlbumCover(req, split)
+                                }
+                            }
+                            "playlists" -> {
+                                if(split[4] == "thumbnails") {
+                                    MusicAppPlaylistsRequest.getPlaylistThumbnails(req, split)
+                                }
+                                else {
+                                    MusicAppPlaylistsRequest.downloadPlaylistThumbnail(req, split)
                                 }
                             }
                             else -> sendBadRequest(req)

@@ -11,7 +11,7 @@ import java.io.File
 object MusicAppSongsRequest : MusicAppRequest {
 
     fun getSongs(req: HttpServerRequest) {
-        sendNotFound(req)
+        getItems(req, "songs")
     }
 
     // /music/songs/{song}/files
@@ -43,7 +43,7 @@ object MusicAppSongsRequest : MusicAppRequest {
                     val directory = item(token, songId, "songs")
                     val infoFile = File("${directory.path}/info.json")
                     //val jsonObject = songInfo(token, songId)
-                    req.response().putHeader("content-type", "application/json").end(infoFile.readText())
+                    req.response().putHeader("content-type", "application/json; charset=UTF-8").end(infoFile.readText())
                 }
                 catch (e: Exception) {
                     sendNotFound(req)
@@ -91,6 +91,10 @@ object MusicAppSongsRequest : MusicAppRequest {
     // /music/songs/my-song
     fun uploadSongInfo(req: HttpServerRequest, split: List<String>) {
         uploadInfo(req, split, "songs", "upload_song_info")
+    }
+
+    fun downloadSongFile(req: HttpServerRequest, split: List<String>) {
+        downloadFile(req, split, "songs")
     }
 
     fun deleteSong(req: HttpServerRequest, split: List<String>) {
