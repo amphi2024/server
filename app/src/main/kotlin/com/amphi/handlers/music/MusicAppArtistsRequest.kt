@@ -30,7 +30,7 @@ object MusicAppArtistsRequest : MusicAppRequest {
     }
 
     fun deleteArtist(req: HttpServerRequest, split: List<String>) {
-        sendNotFound(req)
+        delete(req, split, "artists", "delete_artist")
     }
 
 }
