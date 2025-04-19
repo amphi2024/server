@@ -250,7 +250,7 @@ object ServerDatabase {
     fun saveEvent(token: Token, action: String, value: String, appType: String?) {
         for(item in tokens) {
             if(item.userId == token.userId && item.token != token.token) {
-                println("saved event ${item.userId}, ${item.token}, ${item.deviceName}, $action, $appType")
+                //println("saved event ${item.userId}, ${item.token}, ${item.deviceName}, $action, $appType")
                 val sql = "INSERT INTO events (token, action, value, timestamp, app_type) VALUES ( ? , ? , ?, ?, ? );"
                 val preparedStatement = connection.prepareStatement(sql)
                 preparedStatement.setString(1, item.token)

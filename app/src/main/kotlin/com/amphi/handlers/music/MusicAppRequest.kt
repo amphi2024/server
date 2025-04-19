@@ -127,7 +127,7 @@ interface MusicAppRequest {
 
                         val file = File("${directory.path}/info.json")
                         file.writeText(buffer.toString())
-                        ServerDatabase.saveEvent(token = token, action = "upload_song_info", value = id, appType = "music")
+                        ServerDatabase.saveEvent(token = token, action = eventName, value = id, appType = "music")
 
                         sendSuccess(req)
                     }
@@ -159,7 +159,7 @@ interface MusicAppRequest {
 
                         upload.streamToFileSystem("${directory.path}/${filename}").onComplete { ar ->
                             if (ar.succeeded()) {
-                                ServerDatabase.saveEvent(token = token, action = eventName, value = filename, appType = "music")
+                                ServerDatabase.saveEvent(token = token, action = eventName, value = "$id;$filename", appType = "music")
                                 sendSuccess(req)
                             } else {
                                 sendUploadFailed(req)

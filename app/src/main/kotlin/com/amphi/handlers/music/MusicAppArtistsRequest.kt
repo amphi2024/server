@@ -1,6 +1,5 @@
 package com.amphi.handlers.music
 
-import com.amphi.*
 import io.vertx.core.http.HttpServerRequest
 
 object MusicAppArtistsRequest : MusicAppRequest {
@@ -18,7 +17,7 @@ object MusicAppArtistsRequest : MusicAppRequest {
     }
 
     fun uploadArtistInfo(req: HttpServerRequest, split: List<String>) {
-        uploadInfo(req, split, "artists", "upload_artist_album")
+        uploadInfo(req, split, "artists", "upload_artist_info")
     }
 
     fun uploadArtistFile(req: HttpServerRequest, split: List<String>) {
