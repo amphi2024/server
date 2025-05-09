@@ -101,10 +101,31 @@ object NotesAppFileRequest {
                 },
                 onAuthenticated = { token ->
                     val filePath = "users/${token.userId}/notes/notes/${noteFileNameOnly}/${directoryName}/${filename}"
-                    if (!File(filePath).exists()) {
+                    val file = File(filePath)
+                    if (!file.exists()) {
                         sendFileNotExists(req)
                     } else {
-                        req.response().putHeader("content-type", "application/octet-stream").sendFile(filePath)
+                        val contentType = when(file.extension) {
+                            "mp3" -> "audio/mpeg"
+                            "aac", "m4a" -> "audio/aac"
+                            "flac" -> "audio/flac"
+                            "wav" -> "audio/wav"
+                            "ogg" -> "audio/ogg"
+                            "opus" -> "audio/opus"
+                            "amr" -> "audio/amr"
+                            "weba" -> "audio/webm"
+                            "mp4" -> "video/mp4"
+                            "mkv" -> "video/x-matroska"
+                            "webm" -> "video/webm"
+                            "avi" -> "video/x-msvideo"
+                            "mov" -> "video/quicktime"
+                            "wmv" -> "video/x-ms-wmv"
+                            "flv" -> "video/x-flv"
+                            "3gp" -> "video/3gpp"
+                            "3g2" -> "video/3gpp2"
+                            else -> "application/octet-stream"
+                        }
+                        req.response().putHeader("content-type", contentType).sendFile(filePath)
                     }
                 }
             )
