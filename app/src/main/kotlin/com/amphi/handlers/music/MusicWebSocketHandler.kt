@@ -31,7 +31,6 @@ object MusicWebSocketHandler {
                         ws.handler { message ->
                             for (user in connectedAppUsers) {
                                 if (user.token.token != authenticatedToken.token && user.token.userId == authenticatedToken.userId) {
-                                    println(true)
                                     user.webSocket.writeTextMessage(message.toString())
                                 }
                             }
