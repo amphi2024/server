@@ -186,8 +186,6 @@ object ServerDatabase {
             argon2.wipeArray(oldPassword.toCharArray())
         }
 
-        println(authenticated)
-
         statement.close()
         resultSet.close()
 
@@ -282,7 +280,7 @@ object ServerDatabase {
         resultSet.close()
         statement.close()
 
-        println(jsonArray)
+//        println(jsonArray)
 
         return jsonArray
     }
