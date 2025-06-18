@@ -31,7 +31,6 @@ object NotesWebSocketHandler {
                         ws.handler { message ->
                             for (user in connectedNotesAppUsers) {
                                 if (user.token.token != authenticatedToken.token && user.token.userId == authenticatedToken.userId) {
-                                    println(true)
                                     user.webSocket.writeTextMessage(message.toString())
                                 }
                             }
