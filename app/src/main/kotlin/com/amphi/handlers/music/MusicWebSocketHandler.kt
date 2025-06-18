@@ -38,7 +38,7 @@ object MusicWebSocketHandler {
                         }
 
                         ws.closeHandler {
-                            println("WebSocket closed: ${req.remoteAddress()}")
+//                            println("WebSocket closed: ${req.remoteAddress()}")
                         }
 
 //                            ws.exceptionHandler { throwable ->
