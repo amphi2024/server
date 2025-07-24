@@ -1,6 +1,10 @@
-package com.amphi.handlers.music
+package com.amphi.handlers
 
-import com.amphi.*
+import com.amphi.Messages
+import com.amphi.ServerDatabase
+import com.amphi.sendAuthFailed
+import com.amphi.sendFileNotExists
+import com.amphi.sendSuccess
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
@@ -8,10 +12,11 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
+import kotlin.text.isNullOrBlank
 
-object MusicAppThemeRequest {
+object ThemeHandler {
 
-    fun getThemes(req: HttpServerRequest) {
+    fun getThemes(req: HttpServerRequest, appType: String) {
         val requestToken = req.headers()["Authorization"]
         if(requestToken.isNullOrBlank()) {
             sendAuthFailed(req)
@@ -24,7 +29,7 @@ object MusicAppThemeRequest {
                 },
                 onAuthenticated = { token ->
                     val jsonArray = JsonArray()
-                    val directory = File("users/${token.userId}/music/themes")
+                    val directory = File("users/${token.userId}/${appType}/themes")
                     if (!directory.exists()) {
                         directory.mkdirs()
                     }
@@ -33,7 +38,7 @@ object MusicAppThemeRequest {
                         for (file in files) {
                             val jsonObject = JsonObject()
                             jsonObject.put("filename", file.name)
-                            jsonObject.put("modified", file.lastModified())  // ex: 2024;7;13;18;30;13
+                            jsonObject.put("modified", file.lastModified())
                             jsonArray.add(jsonObject)
                         }
                     }
@@ -43,9 +48,8 @@ object MusicAppThemeRequest {
         }
     }
 
-    fun uploadTheme(req: HttpServerRequest, split: List<String>) {
+    fun uploadTheme(req: HttpServerRequest, appType: String , filename: String) {
         val requestToken = req.headers()["Authorization"]
-        val filename = split[3]
         if(requestToken.isNullOrBlank()) {
             sendAuthFailed(req)
         }
@@ -58,9 +62,9 @@ object MusicAppThemeRequest {
                         sendAuthFailed(req)
                     },
                     onAuthenticated = { token ->
-                        val file = File("users/${token.userId}/music/themes/${filename}")
+                        val file = File("users/${token.userId}/${appType}/themes/${filename}")
                         file.writeText(buffer.toString())
-                        ServerDatabase.saveEvent(token = token, action = "upload_theme", value = filename, appType = "music")
+                        ServerDatabase.saveEvent(token = token, action = "upload_theme", value = filename, appType = appType)
 
                         sendSuccess(req)
                     }
@@ -69,9 +73,8 @@ object MusicAppThemeRequest {
         }
     }
 
-    fun downloadTheme(req: HttpServerRequest, split: List<String>) {
+    fun downloadTheme(req: HttpServerRequest, appType: String, filename: String) {
         val requestToken = req.headers()["Authorization"]
-        val filename = split[3]
         if(requestToken.isNullOrBlank()) {
             sendAuthFailed(req)
         }
@@ -82,7 +85,7 @@ object MusicAppThemeRequest {
                     sendAuthFailed(req)
                 },
                 onAuthenticated = { token ->
-                    val file = File("users/${token.userId}/music/themes/${filename}")
+                    val file = File("users/${token.userId}/${appType}/themes/${filename}")
                     if (!file.exists()) {
                         sendFileNotExists(req)
                     } else {
@@ -93,9 +96,8 @@ object MusicAppThemeRequest {
         }
     }
 
-    fun deleteTheme(req: HttpServerRequest, split: List<String>) {
+    fun deleteTheme(req: HttpServerRequest, appType: String, filename: String) {
         val requestToken = req.headers()["Authorization"]
-        val filename = split[3]
         if (requestToken.isNullOrBlank()) {
             sendAuthFailed(req)
         } else {
@@ -105,8 +107,8 @@ object MusicAppThemeRequest {
                     sendAuthFailed(req)
                 },
                 onAuthenticated = { token ->
-                    val file = File("users/${token.userId}/music/themes/$filename")
-                    val trashes = File("users/${token.userId}/trashes/music/themes")
+                    val file = File("users/${token.userId}/${appType}/themes/$filename")
+                    val trashes = File("users/${token.userId}/trashes/${appType}/themes")
                     if (!trashes.exists()) {
                         trashes.mkdirs()
                     }
@@ -121,7 +123,7 @@ object MusicAppThemeRequest {
                             token = token,
                             action = "delete_theme",
                             value = filename,
-                            appType = "music"
+                            appType = appType
                         )
                         req.response().end(Messages.SUCCESS)
                     } else {
@@ -131,6 +133,54 @@ object MusicAppThemeRequest {
                 }
             )
 
+        }
+    }
+
+    fun getColors(req: HttpServerRequest, appType: String) {
+        val requestToken = req.headers()["Authorization"]
+        if (requestToken.isNullOrBlank()) {
+            sendAuthFailed(req)
+        } else {
+            ServerDatabase.authenticateByToken(
+                token = requestToken,
+                onFailed = {
+                    sendAuthFailed(req)
+                },
+                onAuthenticated = { token ->
+                    val file = File("users/${token.userId}/${appType}/colors")
+                    if (!file.exists()) {
+                        req.response().setStatusCode(404).end(Messages.FILE_NOT_EXISTS)
+                    } else {
+                        req.response().putHeader("content-type", "application/json; charset=UTF-8").end(file.readText())
+                    }
+                }
+            )
+
+        }
+    }
+
+    fun uploadColors(req: HttpServerRequest, appType: String) {
+        val requestToken = req.headers()["Authorization"]
+        if(requestToken.isNullOrBlank()) {
+            sendAuthFailed(req)
+        }
+        else {
+            req.bodyHandler { buffer->
+
+                ServerDatabase.authenticateByToken(
+                    token = requestToken,
+                    onFailed = {
+                        sendAuthFailed(req)
+                    },
+                    onAuthenticated = { token ->
+                        val file = File("users/${token.userId}/${appType}/colors")
+                        file.writeText(buffer.toString())
+                        ServerDatabase.saveEvent(token = token, action = "upload_colors", value = "", appType = appType)
+
+                        sendSuccess(req)
+                    }
+                )
+            }
         }
     }
 

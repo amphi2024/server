@@ -2,6 +2,7 @@ package com.amphi.handlers.notes
 
 import com.amphi.*
 import com.amphi.handlers.ServerEventHandler
+import com.amphi.handlers.ThemeHandler
 import io.vertx.core.http.HttpServerRequest
 
 object NotesAppRequestHandler {
@@ -53,7 +54,7 @@ object NotesAppRequestHandler {
                                 "audio" -> NotesAppFileRequest.downloadFile(req, split, "audio")
                                 else -> {
                                     if(split[2] == "themes") {
-                                        NotesAppThemeRequest.downloadTheme(req, split)
+                                        ThemeHandler.downloadTheme(req, "notes",split[3])
                                     }
                                     else {
                                         sendNotFound(req)
@@ -63,7 +64,7 @@ object NotesAppRequestHandler {
                         }
                         "POST" -> {
                             if(split[2] == "themes") {
-                                NotesAppThemeRequest.uploadTheme(req, split)
+                                ThemeHandler.uploadTheme(req, "notes",split[3])
                             }
                             else {
                                 sendNotFound(req)
@@ -71,7 +72,7 @@ object NotesAppRequestHandler {
                         }
                         "DELETE" -> {
                             if(split[2] == "themes") {
-                                NotesAppThemeRequest.deleteTheme(req, split)
+                                ThemeHandler.deleteTheme(req, "notes", split[3])
                             }
                             else {
                                 sendNotFound(req)
@@ -84,16 +85,16 @@ object NotesAppRequestHandler {
                     when(req.method().name().uppercase()) {
                         "GET" -> {
                             when (req.path()) {
-                                "/notes/colors" -> NotesAppColorRequest.getColors(req)
+                                "/notes/colors" -> ThemeHandler.getColors(req, "notes")
                                 "/notes/events" -> ServerEventHandler.handleGetEvents(req, "notes")
-                                "/notes/themes" -> NotesAppThemeRequest.getThemes(req)
+                                "/notes/themes" -> ThemeHandler.getThemes(req, "notes")
                                 "/notes/sync" -> NotesWebSocketHandler.handleWebsocket(req)
                                 else -> NotesAppNoteRequest.downloadNote(req, split)
                             }
                         }
                         "POST" -> {
                             when(req.path()) {
-                                "/notes/colors" -> NotesAppColorRequest.uploadColors(req)
+                                "/notes/colors" -> ThemeHandler.uploadColors(req, "notes")
                                 else -> NotesAppNoteRequest.uploadNote(req, split)
                             }
                         }

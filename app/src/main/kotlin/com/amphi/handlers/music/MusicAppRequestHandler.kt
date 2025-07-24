@@ -1,6 +1,7 @@
 package com.amphi.handlers.music
 
 import com.amphi.handlers.ServerEventHandler
+import com.amphi.handlers.ThemeHandler
 import com.amphi.sendBadRequest
 import com.amphi.sendNotFound
 import io.vertx.core.http.HttpServerRequest
@@ -74,7 +75,7 @@ object MusicAppRequestHandler {
                             "artists" ->  MusicAppArtistsRequest.getArtistInfo(req, split)
                             "albums" -> MusicAppAlbumsRequest.getAlbumInfo(req, split)
                             "playlists" -> MusicAppPlaylistsRequest.getPlaylist(req, split)
-                            "themes" -> MusicAppThemeRequest.downloadTheme(req, split)
+                            "themes" -> ThemeHandler.downloadTheme(req, "music", split[3])
                             else -> sendNotFound(req)
                         }
                     }
@@ -84,7 +85,7 @@ object MusicAppRequestHandler {
                             "artists" ->  MusicAppArtistsRequest.uploadArtistInfo(req, split)
                             "albums" -> MusicAppAlbumsRequest.uploadAlbumInfo(req, split)
                             "playlists" -> MusicAppPlaylistsRequest.uploadPlaylist(req, split)
-                            "themes" ->  MusicAppThemeRequest.uploadTheme(req, split)
+                            "themes" ->  ThemeHandler.uploadTheme(req, "music", split[3])
                             else -> sendNotFound(req)
                         }
                     }
@@ -94,7 +95,7 @@ object MusicAppRequestHandler {
                             "artists" ->  MusicAppArtistsRequest.deleteArtist(req, split)
                             "albums" -> MusicAppAlbumsRequest.deleteAlbum(req, split)
                             "playlists" -> MusicAppPlaylistsRequest.deletePlaylist(req, split)
-                            "themes" -> MusicAppThemeRequest.deleteTheme(req, split)
+                            "themes" -> ThemeHandler.deleteTheme(req, "music", split[3])
                             else -> sendNotFound(req)
                         }
                     }
@@ -105,9 +106,9 @@ object MusicAppRequestHandler {
                 when(req.method().name().uppercase()) {
                     "GET" -> {
                         when (req.path()) {
-                            "/music/colors" -> MusicAppColorRequest.getColors(req)
+                            "/music/colors" -> ThemeHandler.getColors(req, "music")
                             "/music/events" -> ServerEventHandler.handleGetEvents(req, "music")
-                            "/music/themes" -> MusicAppThemeRequest.getThemes(req)
+                            "/music/themes" -> ThemeHandler.getThemes(req, "music")
                             "/music/sync" -> MusicWebSocketHandler.handleWebsocket(req)
                             "/music/songs" -> MusicAppSongsRequest.getSongs(req)
                             "/music/artists" -> MusicAppArtistsRequest.getArtists(req)
@@ -117,7 +118,7 @@ object MusicAppRequestHandler {
                         }
                     }
                     "POST" -> {
-                        if (req.path() == "/music/colors") MusicAppColorRequest.uploadColors(req)
+                        if (req.path() == "/music/colors") ThemeHandler.uploadColors(req, "music")
                         else sendNotFound(req)
                     }
                     "DELETE" -> {
