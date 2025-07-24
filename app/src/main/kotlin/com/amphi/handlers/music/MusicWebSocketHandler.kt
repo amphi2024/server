@@ -16,8 +16,7 @@ object MusicWebSocketHandler {
         ServerDatabase.authenticateByToken(
             token = token,
             onAuthenticated = { authenticatedToken ->
-                req.toWebSocket { asyncResult ->
-
+                req.toWebSocket().onComplete { asyncResult ->
                     if (asyncResult.succeeded()) {
                         val ws = asyncResult.result()
 
@@ -37,16 +36,10 @@ object MusicWebSocketHandler {
 
                         }
 
-                        ws.closeHandler {
-//                            println("WebSocket closed: ${req.remoteAddress()}")
-                        }
-
-//                            ws.exceptionHandler { throwable ->
-//                                println("WebSocket error: ${throwable.message}")
-//                            }
                     } else {
                         req.response().setStatusCode(StatusCode.INTERNAL_SERVER_ERROR).end(Messages.FAILED)
                     }
+
                 }
             },
             onFailed = {

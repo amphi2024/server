@@ -33,22 +33,12 @@ dependencies {
     // This dependency is used by the application.
     implementation(libs.guava)
 
-    implementation("io.vertx:vertx-core:4.5.13")
-    implementation("org.xerial:sqlite-jdbc:3.41.2.2")
-    implementation("io.netty:netty-resolver-dns-native-macos:4.1.68.Final:osx-aarch_64")
-    implementation("de.mkammerer:argon2-jvm:2.11")
-    implementation("net.jthink:jaudiotagger:3.0.1")
+    implementation("io.vertx:vertx-core:5.0.1")
+    implementation("org.xerial:sqlite-jdbc:3.50.3.0")
+    implementation("io.netty:netty-resolver-dns-native-macos:4.2.3.Final:osx-aarch_64")
+    implementation("de.mkammerer:argon2-jvm:2.12")
+    implementation("com.arthenica:ffmpeg-kit-full:4.5")
 
-}
-
-// Apply a specific Java toolchain to ease working on different environments.
-java {
-//    toolchain {
-//        languageVersion = JavaLanguageVersion.of(21)
-//    }
-    toolchain {
-        languageVersion =  JavaLanguageVersion.of(8)
-    }
 }
 
 application {
