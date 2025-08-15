@@ -37,7 +37,6 @@ dependencies {
     implementation("org.xerial:sqlite-jdbc:3.50.3.0")
     implementation("io.netty:netty-resolver-dns-native-macos:4.2.3.Final:osx-aarch_64")
     implementation("de.mkammerer:argon2-jvm:2.12")
-    implementation("com.arthenica:ffmpeg-kit-full:4.5")
 
 }
 
