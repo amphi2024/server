@@ -14,7 +14,6 @@ object PhotosAppRequestHandler {
     fun handleRequest(req: HttpServerRequest) {
 
         val split = req.path().split("/")
-        println("photos")
         when(split.size) {
             4 -> {  //    /photos/{my-photo}/info
                 when(req.method().name().uppercase()) {
