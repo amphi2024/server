@@ -10,7 +10,10 @@ object ServerSettings {
     var blockMessage = "you are blocked"
     var whitelistOnly = false
     var rateLimitIntervalMinutes = 10
-    var rateLimitMaxRequests = 450
+    var rateLimitMaxRequests = 45000
+    var autoUpdate = true
+    var multiResVideo = false
+    var generateMediaThumbnail = true
 
     private val whitelist = mutableListOf<String>()
     private val blacklist = mutableListOf<String>()
@@ -48,6 +51,15 @@ object ServerSettings {
                         "rate-limit-max-requests" -> {
                             rateLimitMaxRequests = Integer.parseInt(second)
                         }
+                        "auto-update" -> {
+                            autoUpdate = second.toBoolean()
+                        }
+                        "multi-res-video" -> {
+                            multiResVideo = second.toBoolean()
+                        }
+                        "generate-media-thumbnail" -> {
+                            generateMediaThumbnail = second.toBoolean()
+                        }
                     }
                }
 
@@ -55,7 +67,7 @@ object ServerSettings {
             getWhiteList()
             getBlackList()
         }
-        catch(e:Exception) {
+        catch(_:Exception) {
             println("There was an error reading the configuration file. Some settings may not be applied.")
             saveSettings()
         }
@@ -74,6 +86,9 @@ object ServerSettings {
         stringBuilder.appendLine("whitelist-only:$whitelistOnly")
         stringBuilder.appendLine("rate-limit-interval-minutes:$rateLimitIntervalMinutes")
         stringBuilder.appendLine("rate-limit-max-requests:$rateLimitMaxRequests")
+        stringBuilder.appendLine("auto-update:$autoUpdate")
+        stringBuilder.appendLine("multi-res-video:$multiResVideo")
+        stringBuilder.append("generate-media-thumbnail:$generateMediaThumbnail")
         file.writeText(stringBuilder.toString())
     }
 
@@ -93,7 +108,7 @@ object ServerSettings {
                 }
             }
         }
-        catch (e: Exception) {
+        catch (_: Exception) {
             println("Unable to read the blacklist file.")
         }
     }
@@ -114,7 +129,7 @@ object ServerSettings {
                 }
             }
         }
-        catch (e: Exception) {
+        catch (_: Exception) {
             println("Unable to read the whitelist file.")
         }
     }
