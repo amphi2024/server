@@ -6,6 +6,7 @@ import com.amphi.handlers.cloud.CloudAppRequestHandler
 import com.amphi.handlers.music.MusicAppRequestHandler
 import com.amphi.handlers.notes.NotesAppRequestHandler
 import com.amphi.handlers.photos.PhotosAppRequestHandler
+import com.amphi.utils.checkForUpdates
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Handler
 import io.vertx.core.Vertx
@@ -34,6 +35,7 @@ class App : AbstractVerticle(), Handler<HttpServerRequest> {
                 else -> sendNotFound(req)
             }
         } catch (e: Exception) {
+            println(e)
             req.response()
                 .setStatusCode(StatusCode.INTERNAL_SERVER_ERROR)
                 .end(Messages.ERROR)
@@ -45,7 +47,7 @@ class App : AbstractVerticle(), Handler<HttpServerRequest> {
         vertx.createHttpServer().requestHandler{req ->
 
             val ipAddress = req.remoteAddress().hostAddress()
-//            println("request - ip: $ipAddress, ${req.path()} ${req.method().name()}")
+            println("request - ip: $ipAddress, ${req.path()} ${req.method().name()}")
             if(RateLimiter.isAllowed(ipAddress)) {
                 if(ServerSettings.whitelistOnly) {
                     if(ServerSettings.inWhiteList(ipAddress)) {
@@ -94,6 +96,9 @@ fun main() {
             ServerDatabase.syncTokensLastAccess()
             ServerDatabase.deleteObsoleteTokens()
             ServerFileUtils.organizeFiles()
+            if(ServerSettings.autoUpdate) {
+                checkForUpdates()
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }
