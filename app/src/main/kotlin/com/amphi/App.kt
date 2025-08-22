@@ -14,7 +14,7 @@ import io.vertx.core.http.HttpServerRequest
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-const val VERSION = "1.2.0"
+const val VERSION = "1.3.0"
 
 class App : AbstractVerticle(), Handler<HttpServerRequest> {
 
@@ -47,7 +47,7 @@ class App : AbstractVerticle(), Handler<HttpServerRequest> {
         vertx.createHttpServer().requestHandler{req ->
 
             val ipAddress = req.remoteAddress().hostAddress()
-            println("request - ip: $ipAddress, ${req.path()} ${req.method().name()}")
+            //println("request - ip: $ipAddress, ${req.path()} ${req.method().name()}")
             if(RateLimiter.isAllowed(ipAddress)) {
                 if(ServerSettings.whitelistOnly) {
                     if(ServerSettings.inWhiteList(ipAddress)) {
