@@ -40,6 +40,13 @@ dependencies {
 
 }
 
+java {
+    toolchain {
+        languageVersion =  JavaLanguageVersion.of(11)
+    }
+}
+
+
 application {
     // Define the main class for the application.
     mainClass = "com.amphi.AppKt"
