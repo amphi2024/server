@@ -8,6 +8,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
+import java.security.MessageDigest
 import kotlin.concurrent.thread
 
 private fun photoDirectoryPathById(userId: String, id: String): String {
@@ -340,6 +341,39 @@ fun getPhotos(req: HttpServerRequest) {
                     }
                 }
                 req.response().putHeader("content-type", "application/json; charset=UTF-8").end(jsonArray.encode())
+            }
+        )
+    }
+}
+
+fun getSha256(req: HttpServerRequest, split: List<String>) {
+    val requestToken = req.headers()["Authorization"]
+    val id = split[2]
+    if (requestToken.isNullOrBlank()) {
+        sendAuthFailed(req)
+    } else {
+        ServerDatabase.authenticateByToken(
+            token = requestToken,
+            onFailed = {
+                sendAuthFailed(req)
+            },
+            onAuthenticated = { token ->
+                val directoryPath = photoDirectoryPathById(token.userId, id)
+                val file = photoFileById(directoryPath)
+                if(file != null) {
+                    val digest = MessageDigest.getInstance("SHA-256")
+                    file.inputStream().use { fis ->
+                        val buffer = ByteArray(1024 * 4)
+                        var bytesRead: Int
+                        while (fis.read(buffer).also { bytesRead = it } != -1) {
+                            digest.update(buffer, 0, bytesRead)
+                        }
+                    }
+                    req.response().putHeader("content-type", "text/plain").end(digest.digest().joinToString("") { "%02x".format(it) })
+                }
+                else {
+                    sendFileNotExists(req)
+                }
             }
         )
     }

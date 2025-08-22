@@ -27,6 +27,9 @@ object PhotosAppRequestHandler {
                                 else if(split[3] == "thumbnail") {
                                     downloadThumbnail(req, split)
                                 }
+                                else if(split[3] == "sha256") {
+                                    getSha256(req, split)
+                                }
                                 else {
                                     sendBadRequest(req)
                                 }
@@ -71,7 +74,12 @@ object PhotosAppRequestHandler {
                         uploadPhoto(req, split)
                     }
                     "DELETE" -> {
-                        deletePhoto(req, split)
+                        if(req.path() == "/photos/events") {
+                            ServerEventHandler.handleAcknowledgeEvent(req)
+                        }
+                        else {
+                            deletePhoto(req, split)
+                        }
                     }
                     else -> sendNotFound(req)
                 }
