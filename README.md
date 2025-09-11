@@ -10,10 +10,10 @@ Amphi Apps Server is easy to set up, flexible, and you can run it on any platfor
 curl -L https://github.com/amphi2024/server/releases/download/v{LATEST_VERSION}/server-{LATEST_VERSION}.jar -o server.jar
 ```
 
-### 2. Install Java Runtime
+### 2. Download Java Runtime
 
 If you already have Java installed, you can skip this step.
-If not, you can download it from [Adoptium](https://adoptium.net/temurin/releases/?package=jre) or [Azul](https://www.azul.com/downloads/?package=jre#zulu)
+If not, you can download it from [Adoptium](https://adoptium.net/temurin/releases/?package=jre), [Azul](https://www.azul.com/downloads/?package=jre#zulu), or another provider.
 
 ### 3. Create a Service File (for Auto Start on Linux)
 
