@@ -1,5 +1,6 @@
 package com.amphi
 
+import com.amphi.handlers.cloud.CloudAppDatabase
 import com.amphi.models.Note
 import com.amphi.models.NoteContent
 import com.amphi.models.TrashLog
@@ -16,6 +17,8 @@ object ServerFileUtils {
         val trashLogs = ServerDatabase.getTrashLogs()
         if(users.exists()) {
             users.listFiles()?.forEach { userDirectory ->
+                deleteObsoleteCloudFiles(userDirectory)
+
                 val trashes = File("users/${userDirectory.name}/trashes")
                 emptyTrash(trashes, trashLogs)
 
@@ -123,6 +126,15 @@ object ServerFileUtils {
             else if(file.isDirectory) {
                 emptyTrash(file, trashLogs)
             }
+        }
+    }
+
+    private fun deleteObsoleteCloudFiles(userDirectory: File) {
+        val cloudDBFile = File("users/${userDirectory.name}/cloud/cloud.db")
+        if(cloudDBFile.exists()) {
+            val database = CloudAppDatabase(userDirectory.name)
+            database.permanentlyDeleteObsoleteFiles()
+            database.close()
         }
     }
 }
