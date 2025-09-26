@@ -6,6 +6,24 @@ import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 
+fun getFileExtension(filename: String): String {
+    return filename.substringAfterLast('.', "")
+}
+
+fun generateThumbnail(fileExtension: String, input: String, output: String) {
+    if (isVideoExtension(fileExtension)) {
+        generateVideoThumbnail(
+            input = input,
+            output = output
+        )
+    } else if(isImageExtension(fileExtension)) {
+        generateImageThumbnail(
+            input = input,
+            output = output
+        )
+    }
+}
+
 fun getVideoResolution(videoPath: String): Pair<Int, Int>? {
     return try {
         val probeProcess = ProcessBuilder(
@@ -51,6 +69,13 @@ fun isVideoExtension(fileExtension: String) : Boolean {
         "vob", "ts"
     )
     return fileExtension.lowercase() in videoExtensions
+}
+
+fun isImageExtension(fileExtension: String) : Boolean {
+    val imageExtensions = setOf(
+        "bmp", "gif", "jpeg", "jpg", "png", "webp"
+    )
+    return fileExtension.lowercase() in imageExtensions
 }
 
 fun generateVideoThumbnail(input: String, output: String) {
