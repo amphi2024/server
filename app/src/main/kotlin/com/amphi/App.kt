@@ -14,7 +14,7 @@ import io.vertx.core.http.HttpServerRequest
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-const val VERSION = "1.4.0"
+const val VERSION = "1.4.1"
 
 class App : AbstractVerticle(), Handler<HttpServerRequest> {
 
