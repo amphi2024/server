@@ -30,6 +30,10 @@ fun createFile(req: HttpServerRequest) {
                 token = requestToken,
                 onFailed = { sendAuthFailed(req) },
                 onAuthenticated = { token ->
+                    val cloudDirectory = File("users/${token.userId}/cloud")
+                    if(!cloudDirectory.exists()) {
+                        cloudDirectory.mkdirs()
+                    }
                     val database = CloudAppDatabase(token.userId)
                     val id = database.generateUniqueFileId()
                     val directoryPath = fileDirectoryPathById(token.userId, id)
