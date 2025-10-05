@@ -1,6 +1,6 @@
 package com.amphi.server
 
-import com.amphi.server.handlers.cloud.CloudAppDatabase
+import com.amphi.server.models.CloudAppDatabase
 import com.amphi.server.models.Note
 import com.amphi.server.models.NoteContent
 import com.amphi.server.models.TrashLog

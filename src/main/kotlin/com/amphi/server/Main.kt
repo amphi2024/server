@@ -1,12 +1,23 @@
 package com.amphi.server
 
+import com.amphi.server.common.Messages
+import com.amphi.server.common.StatusCode
+import com.amphi.server.configs.SQLITE
+import com.amphi.server.configs.ServerSettings
 import com.amphi.server.handlers.StorageHandler
-import com.amphi.server.handlers.UserHandler
-import com.amphi.server.handlers.cloud.CloudAppRequestHandler
-import com.amphi.server.handlers.music.MusicAppRequestHandler
-import com.amphi.server.handlers.notes.NotesAppRequestHandler
-import com.amphi.server.handlers.photos.PhotosAppRequestHandler
+import com.amphi.server.routes.MusicRouter
+import com.amphi.server.routes.NotesRouter
+import com.amphi.server.routes.UserRouter
+import com.amphi.server.services.auth.AuthorizationPostgresService
+import com.amphi.server.services.auth.AuthorizationSqliteService
+import com.amphi.server.services.event.EventPostgresService
+import com.amphi.server.services.event.EventSqliteService
+import com.amphi.server.services.trash.TrashPostgresService
+import com.amphi.server.services.trash.TrashSqliteService
 import com.amphi.server.utils.checkForUpdates
+import com.amphi.server.common.sendNotFound
+import com.amphi.server.routes.CloudRouter
+import com.amphi.server.routes.PhotosRouter
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Handler
 import io.vertx.core.Vertx
@@ -15,6 +26,10 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 const val VERSION = "1.4.1"
+
+val authorizationService = if (ServerSettings.databaseType == SQLITE) AuthorizationSqliteService() else AuthorizationPostgresService()
+val eventService = if (ServerSettings.databaseType == SQLITE) EventSqliteService() else EventPostgresService()
+val trashService = if (ServerSettings.databaseType == SQLITE) TrashSqliteService() else TrashPostgresService()
 
 class App : AbstractVerticle(), Handler<HttpServerRequest> {
 
@@ -26,12 +41,12 @@ class App : AbstractVerticle(), Handler<HttpServerRequest> {
                     req.response().putHeader("content-type", "text/plain").end("Server is running. Let's go!")
                 }
                 path == "/version" -> req.response().putHeader("content-type", "text/plain").end(VERSION)
-                path == "/storage" -> StorageHandler.handleStorageInfo(req)
-                path.startsWith("/users") -> UserHandler.handleUserRequest(req)
-                path.startsWith("/notes") -> NotesAppRequestHandler.handleRequest(req)
-                path.startsWith("/music") -> MusicAppRequestHandler.handleRequest(req)
-                path.startsWith("/cloud") -> CloudAppRequestHandler.handleRequest(req)
-                path.startsWith("/photos") -> PhotosAppRequestHandler.handleRequest(req)
+                path == "/storage" -> StorageHandler.getStorageInfo(req)
+                path.startsWith("/users") -> UserRouter.route(req)
+                path.startsWith("/notes") -> NotesRouter.route(req)
+                path.startsWith("/music") -> MusicRouter.route(req)
+                path.startsWith("/photos") -> PhotosRouter.route(req)
+                path.startsWith("/cloud") -> CloudRouter.route(req)
                 else -> sendNotFound(req)
             }
         } catch (e: Exception) {

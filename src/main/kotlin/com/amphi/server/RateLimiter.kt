@@ -1,5 +1,6 @@
 package com.amphi.server
 
+import com.amphi.server.configs.ServerSettings
 import java.util.concurrent.ConcurrentHashMap
 
 object RateLimiter {

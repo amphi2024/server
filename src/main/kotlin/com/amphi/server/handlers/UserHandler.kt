@@ -1,42 +1,17 @@
 package com.amphi.server.handlers
 
-import com.amphi.server.Messages
+import com.amphi.server.common.Messages
 import com.amphi.server.ServerDatabase
-import com.amphi.server.ServerSettings
-import com.amphi.server.StatusCode
-import com.amphi.server.sendAuthFailed
-import com.amphi.server.sendSuccess
+import com.amphi.server.configs.ServerSettings
+import com.amphi.server.common.StatusCode
+import com.amphi.server.common.sendAuthFailed
+import com.amphi.server.common.sendSuccess
+import com.amphi.server.common.handleAuthorization
 import io.vertx.core.http.HttpServerRequest
 
 object UserHandler {
 
-    fun handleUserRequest(req: HttpServerRequest) {
-        when (req.method().name().uppercase()) {
-            "GET" -> {
-                when (req.path()) {
-                    "/users" -> handleGetUserIds(req)
-                    "/users/logout" -> handleLogout(req)
-                }
-            }
-            "POST" -> {
-                when (req.path()) {
-                    "/users" -> handleRegister(req)
-                    "/users/login" -> handleLogin(req)
-                }
-            }
-            "PATCH" -> {
-                val split = req.path().split("/")
-                val userId = split[2]
-                if (split.size > 3 && split[3] == "password") { //   users/{userId}/password
-                    handleChangePassword(req, userId)
-                } else if(req.path() == "/users/name") {  //  users/{userId}
-                    handleRename(req)
-                }
-            }
-        }
-    }
-
-    private fun handleRegister(req: HttpServerRequest) {
+    fun register(req: HttpServerRequest) {
         req.bodyHandler { buffer ->
             val jsonBody = buffer.toJsonObject()
             if (jsonBody == null) {
@@ -71,7 +46,7 @@ object UserHandler {
         }
     }
 
-    private fun handleLogin(req: HttpServerRequest) {
+    fun login(req: HttpServerRequest) {
         req.bodyHandler { buffer ->
             val jsonBody = buffer.toJsonObject()
             if (jsonBody == null) {
@@ -105,7 +80,7 @@ object UserHandler {
         }
     }
 
-    private fun handleLogout(req: HttpServerRequest) {
+    fun logout(req: HttpServerRequest) {
         val requestToken = req.headers().get("Authorization")
             if (requestToken == null) {
                 sendAuthFailed(req)
@@ -116,41 +91,36 @@ object UserHandler {
 
     }
 
-    private fun handleRename(req: HttpServerRequest) {
-        val requestToken = req.headers().get("Authorization")
-        req.bodyHandler { buffer ->
-            val jsonBody = buffer.toJsonObject()
-            if (jsonBody == null) {
-                sendAuthFailed(req)
-            } else {
-                val name = jsonBody.getString("name")
-
-                if (name.isNullOrBlank() || requestToken.isNullOrBlank()) {
+    fun changeUsername(req: HttpServerRequest) {
+        handleAuthorization(req) { token ->
+            req.bodyHandler { buffer ->
+                val jsonBody = buffer.toJsonObject()
+                if (jsonBody == null) {
                     sendAuthFailed(req)
                 } else {
-                    ServerDatabase.authenticateByToken(token = requestToken,
-                        onFailed = {
-                            sendAuthFailed(req)
-                        },
-                        onAuthenticated = {token ->
-                                ServerDatabase.renameUser(
-                                    id = token.userId,
-                                    name = name,
-                                )
-                                ServerDatabase.saveEvent(
-                                    value = name,
-                                    action = "rename_user",
-                                    token = token,
-                                    appType = null
-                                )
-                    })
-                    sendSuccess(req)
+                    val name = jsonBody.getString("name")
+
+                    if (name.isNullOrBlank()) {
+                        sendAuthFailed(req)
+                    } else {
+                        ServerDatabase.renameUser(
+                            id = token.userId,
+                            name = name,
+                        )
+                        ServerDatabase.saveEvent(
+                            value = name,
+                            action = "rename_user",
+                            token = token,
+                            appType = null
+                        )
+                        sendSuccess(req)
+                    }
                 }
             }
         }
     }
 
-    private fun handleChangePassword(req: HttpServerRequest, userId: String) {
+    fun changePassword(req: HttpServerRequest, userId: String) {
         req.bodyHandler { buffer ->
             val jsonBody = buffer.toJsonObject()
             if (jsonBody == null) {
@@ -183,7 +153,7 @@ object UserHandler {
         }
     }
 
-    private fun handleGetUserIds(req: HttpServerRequest) {
+    fun getUserIds(req: HttpServerRequest) {
         req.response().putHeader("content-type", "application/json; charset=UTF-8").end(ServerDatabase.getUserIds().encode())
     }
 }

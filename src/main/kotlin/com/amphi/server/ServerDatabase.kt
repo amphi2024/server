@@ -1,5 +1,6 @@
 package com.amphi.server
 
+import com.amphi.server.configs.ServerSettings
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import com.amphi.server.models.Token
