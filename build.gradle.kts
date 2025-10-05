@@ -36,13 +36,13 @@ java {
 
 
 application {
-    mainClass = "com.amphi.server.AppKt"
+    mainClass = "com.amphi.server.MainKt"
 }
 
 tasks.jar {
     manifest {
         attributes(
-            "Main-Class" to "com.amphi.server.AppKt"
+            "Main-Class" to "com.amphi.server.MainKt"
 
         )
     }
