@@ -1,15 +1,15 @@
 package com.amphi.server.handlers
 
-import com.amphi.server.ServerDatabase
 import com.amphi.server.common.Messages
 import com.amphi.server.common.handleAuthorization
-import com.amphi.server.common.sendAuthFailed
 import com.amphi.server.common.sendBadRequest
 import com.amphi.server.common.sendFileNotExists
 import com.amphi.server.common.sendNotFound
 import com.amphi.server.common.sendSuccess
 import com.amphi.server.common.sendUploadFailed
 import com.amphi.server.configs.ServerSettings
+import com.amphi.server.eventService
+import com.amphi.server.trashService
 import com.amphi.server.utils.contentTypeByExtension
 import com.amphi.server.utils.generateImageThumbnail
 import com.amphi.server.utils.generateMultiResVideo
@@ -35,7 +35,7 @@ object PhotosHandler {
                 }
                 val file = File("users/${token.userId}/photos/albums/${id}.album")
                 file.writeText(buffer.toString())
-                ServerDatabase.saveEvent(
+                eventService.saveEvent(
                     token = token,
                     action = "upload_album",
                     value = id,
@@ -73,8 +73,8 @@ object PhotosHandler {
                     Paths.get("${trashes.path}/${id}.album"),
                     StandardCopyOption.REPLACE_EXISTING
                 )
-                ServerDatabase.notifyFileDelete("${trashes.path}/${id}.album")
-                ServerDatabase.saveEvent(
+                trashService.notifyFileDelete("${trashes.path}/${id}.album")
+                eventService.saveEvent(
                     token = token,
                     action = "delete_album",
                     value = id,
@@ -130,29 +130,16 @@ object PhotosHandler {
     }
 
     fun uploadPhotoInfo(req: HttpServerRequest, split: List<String>) {
-        val requestToken = req.headers()["Authorization"]
         val id = split[2]
-        print(id)
-        if (requestToken.isNullOrBlank()) {
-            sendAuthFailed(req)
-        } else {
+        handleAuthorization(req) {token ->
             req.bodyHandler { buffer ->
+                val directory = photoDirectoryById(token.userId, id)
 
-                ServerDatabase.authenticateByToken(
-                    token = requestToken,
-                    onFailed = {
-                        sendAuthFailed(req)
-                    },
-                    onAuthenticated = { token ->
-                        val directory = photoDirectoryById(token.userId, id)
+                val file = File("${directory.path}/info.json")
+                file.writeText(buffer.toString())
+                eventService.saveEvent(token = token, action = "upload_photo", value = id, appType = "photos")
 
-                        val file = File("${directory.path}/info.json")
-                        file.writeText(buffer.toString())
-                        ServerDatabase.saveEvent(token = token, action = "upload_photo", value = id, appType = "photos")
-
-                        sendSuccess(req)
-                    }
-                )
+                sendSuccess(req)
             }
         }
     }
@@ -275,8 +262,8 @@ object PhotosHandler {
                     Paths.get("${trashes.path}/${id}"),
                     StandardCopyOption.REPLACE_EXISTING
                 )
-                ServerDatabase.notifyFileDelete("${trashes.path}/${id}")
-                ServerDatabase.saveEvent(
+                trashService.notifyFileDelete("${trashes.path}/${id}")
+                eventService.saveEvent(
                     token = token,
                     action = "delete_photo",
                     value = id,

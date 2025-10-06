@@ -1,6 +1,5 @@
 package com.amphi.server.handlers
 
-import com.amphi.server.ServerDatabase
 import com.amphi.server.common.Messages
 import com.amphi.server.common.StatusCode
 import com.amphi.server.common.handleAuthorization
@@ -12,6 +11,7 @@ import com.amphi.server.common.sendUploadFailed
 import com.amphi.server.configs.ServerSettings
 import com.amphi.server.models.CloudAppDatabase
 import com.amphi.server.models.FileModel
+import com.amphi.server.trashService
 import com.amphi.server.utils.contentTypeByExtension
 import com.amphi.server.utils.generateThumbnail
 import com.amphi.server.utils.getFileExtension
@@ -196,7 +196,7 @@ object CloudHandler {
                     Paths.get("${trash.path}/${id}"),
                     StandardCopyOption.REPLACE_EXISTING
                 )
-                ServerDatabase.notifyFileDelete("${trash.path}/${id}")
+                trashService.notifyFileDelete("${trash.path}/${id}")
                 req.response().end(Messages.SUCCESS)
             } else {
                 req.response().setStatusCode(404).end(Messages.FILE_NOT_EXISTS)

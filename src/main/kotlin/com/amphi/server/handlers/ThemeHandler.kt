@@ -1,10 +1,11 @@
 package com.amphi.server.handlers
 
 import com.amphi.server.common.Messages
-import com.amphi.server.ServerDatabase
 import com.amphi.server.common.sendFileNotExists
 import com.amphi.server.common.sendSuccess
 import com.amphi.server.common.handleAuthorization
+import com.amphi.server.eventService
+import com.amphi.server.trashService
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
@@ -40,7 +41,7 @@ object ThemeHandler {
             req.bodyHandler { buffer ->
                 val file = File("users/${token.userId}/${appType}/themes/${filename}")
                 file.writeText(buffer.toString())
-                ServerDatabase.saveEvent(token = token, action = "upload_theme", value = filename, appType = appType)
+                eventService.saveEvent(token = token, action = "upload_theme", value = filename, appType = appType)
 
                 sendSuccess(req)
             }
@@ -71,8 +72,8 @@ object ThemeHandler {
                     Paths.get("${trashes.path}/${filename}"),
                     StandardCopyOption.REPLACE_EXISTING
                 )
-                ServerDatabase.notifyFileDelete("${trashes.path}/${filename}")
-                ServerDatabase.saveEvent(
+                trashService.notifyFileDelete("${trashes.path}/${filename}")
+                eventService.saveEvent(
                     token = token,
                     action = "delete_theme",
                     value = filename,
@@ -101,7 +102,7 @@ object ThemeHandler {
             req.bodyHandler { buffer ->
                 val file = File("users/${token.userId}/${appType}/colors")
                 file.writeText(buffer.toString())
-                ServerDatabase.saveEvent(token = token, action = "upload_colors", value = "", appType = appType)
+                eventService.saveEvent(token = token, action = "upload_colors", value = "", appType = appType)
 
                 sendSuccess(req)
             }

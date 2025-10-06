@@ -1,13 +1,13 @@
 package com.amphi.server.handlers
 
 import com.amphi.server.common.Messages
-import com.amphi.server.ServerDatabase
-import com.amphi.server.common.sendAuthFailed
 import com.amphi.server.common.sendFileNotExists
 import com.amphi.server.common.sendSuccess
 import com.amphi.server.common.sendUploadFailed
 import com.amphi.server.utils.contentTypeByExtension
 import com.amphi.server.common.handleAuthorization
+import com.amphi.server.eventService
+import com.amphi.server.trashService
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
@@ -44,7 +44,7 @@ object NotesHandler {
             req.bodyHandler { buffer ->
                 val file = File("users/${token.userId}/notes/notes/${filename}")
                 file.writeText(buffer.toString())
-                ServerDatabase.saveEvent(token = token, action = "upload_note", value = filename, appType = "notes")
+                eventService.saveEvent(token = token, action = "upload_note", value = filename, appType = "notes")
 
                 sendSuccess(req)
             }
@@ -78,8 +78,8 @@ object NotesHandler {
                     Paths.get("${trashes.path}/${filename}"),
                     StandardCopyOption.REPLACE_EXISTING
                 )
-                ServerDatabase.notifyFileDelete("${trashes.path}/${filename}")
-                ServerDatabase.saveEvent(
+                trashService.notifyFileDelete("${trashes.path}/${filename}")
+                eventService.saveEvent(
                     token = token,
                     action = "delete_note",
                     value = filename,
@@ -115,39 +115,24 @@ object NotesHandler {
     }
 
     fun uploadFile(req: HttpServerRequest, split: List<String>, directoryName: String) {
-        val requestToken = req.headers()["Authorization"]
         val noteFileNameOnly = split[2]
         val filename = split[4]
-        if(requestToken.isNullOrBlank()) {
-            sendAuthFailed(req)
-        }
-        else {
+
+        handleAuthorization(req) {token ->
             req.isExpectMultipart = true
             req.uploadHandler { upload ->
+                val directory = File("users/${token.userId}/notes/notes/$noteFileNameOnly/${directoryName}")
+                if (!directory.exists()) {
+                    directory.mkdirs()
+                }
 
-                ServerDatabase.authenticateByToken(
-                    token = requestToken,
-                    onFailed = {
-                        sendAuthFailed(req)
-                        println(requestToken)
-                    },
-                    onAuthenticated = { token ->
-                        val directory = File("users/${token.userId}/notes/notes/$noteFileNameOnly/${directoryName}")
-                        if (!directory.exists()) {
-                            directory.mkdirs()
-                        }
-
-                        upload.streamToFileSystem("${directory.path}/${filename}").onComplete { ar ->
-                            if (ar.succeeded()) {
-                                sendSuccess(req)
-                            } else {
-                                sendUploadFailed(req)
-                            }
-                        }
-
+                upload.streamToFileSystem("${directory.path}/${filename}").onComplete { ar ->
+                    if (ar.succeeded()) {
+                        sendSuccess(req)
+                    } else {
+                        sendUploadFailed(req)
                     }
-                )
-
+                }
             }
             req.exceptionHandler {
                 sendUploadFailed(req)
@@ -184,7 +169,7 @@ object NotesHandler {
                     Paths.get("${trashes.path}/${filename}"),
                     StandardCopyOption.REPLACE_EXISTING
                 )
-                ServerDatabase.notifyFileDelete("${trashes.path}/${filename}")
+                trashService.notifyFileDelete("${trashes.path}/${filename}")
                 sendSuccess(req)
             } else {
                 sendFileNotExists(req)

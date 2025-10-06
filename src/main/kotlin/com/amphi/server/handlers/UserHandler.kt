@@ -1,15 +1,20 @@
 package com.amphi.server.handlers
 
 import com.amphi.server.common.Messages
-import com.amphi.server.ServerDatabase
 import com.amphi.server.configs.ServerSettings
 import com.amphi.server.common.StatusCode
 import com.amphi.server.common.sendAuthFailed
 import com.amphi.server.common.sendSuccess
 import com.amphi.server.common.handleAuthorization
+import com.amphi.server.configs.SQLITE
+import com.amphi.server.eventService
+import com.amphi.server.services.user.UserPostgresService
+import com.amphi.server.services.user.UserSqliteService
 import io.vertx.core.http.HttpServerRequest
 
 object UserHandler {
+
+    private val userService = if(ServerSettings.databaseType == SQLITE) UserSqliteService() else UserPostgresService()
 
     fun register(req: HttpServerRequest) {
         req.bodyHandler { buffer ->
@@ -25,22 +30,15 @@ object UserHandler {
                     sendAuthFailed(req)
                 } else {
                     if(ServerSettings.openRegistration) {
-                        ServerDatabase.registerUser(id = id, name = name, password = password, onFailed = {
-                            val response = req.response()
-                            response.setStatusCode(StatusCode.BAD_REQUEST)
-                            response.end(Messages.ID_ALREADY_TAKEN)
+                        userService.register(id = id, name = name, password = password, onFailed = {
+                            req.response().setStatusCode(StatusCode.BAD_REQUEST).end(Messages.ID_ALREADY_TAKEN)
+                        }, onSuccess = {
+                            sendSuccess(req)
                         })
-
-                        val response = req.response()
-                        response.putHeader("content-type", "text/plain")
-                        response.end(Messages.SUCCESS)
                     }
                     else {
-                        val response = req.response()
-                        response.setStatusCode(StatusCode.FORBIDDEN)
-                        response.end(Messages.NOT_ALLOWED_REGISTER)
+                        req.response().setStatusCode(StatusCode.FORBIDDEN).end(Messages.NOT_ALLOWED_REGISTER)
                     }
-
                 }
             }
         }
@@ -60,7 +58,7 @@ object UserHandler {
                 if (id.isNullOrBlank() || deviceName.isNullOrBlank() || password.isNullOrBlank()) {
                     sendAuthFailed(req)
                 } else {
-                    ServerDatabase.login(
+                    userService.login(
                         id = id,
                         deviceName = deviceName,
                         password = password
@@ -73,22 +71,16 @@ object UserHandler {
                             sendAuthFailed(req)
                         }
                     }
-
-
                 }
             }
         }
     }
 
     fun logout(req: HttpServerRequest) {
-        val requestToken = req.headers().get("Authorization")
-            if (requestToken == null) {
-                sendAuthFailed(req)
-            } else {
-                ServerDatabase.logout(requestToken)
-                sendSuccess(req)
-            }
-
+        handleAuthorization(req) {token ->
+            userService.logout(token.token)
+            sendSuccess(req)
+        }
     }
 
     fun changeUsername(req: HttpServerRequest) {
@@ -103,11 +95,11 @@ object UserHandler {
                     if (name.isNullOrBlank()) {
                         sendAuthFailed(req)
                     } else {
-                        ServerDatabase.renameUser(
+                        userService.changeUsername(
                             id = token.userId,
                             name = name,
                         )
-                        ServerDatabase.saveEvent(
+                        eventService.saveEvent(
                             value = name,
                             action = "rename_user",
                             token = token,
@@ -134,7 +126,7 @@ object UserHandler {
                     sendAuthFailed(req)
                 } else {
                     if(id == userId) {
-                        ServerDatabase.changeUserPassword(
+                        userService.changePassword(
                             id = id,
                             password = password,
                             oldPassword = oldPassword,
@@ -146,14 +138,12 @@ object UserHandler {
                             }
                         )
                     }
-
-
                 }
             }
         }
     }
 
     fun getUserIds(req: HttpServerRequest) {
-        req.response().putHeader("content-type", "application/json; charset=UTF-8").end(ServerDatabase.getUserIds().encode())
+        req.response().putHeader("content-type", "application/json; charset=UTF-8").end(userService.getUserIds().encode())
     }
 }

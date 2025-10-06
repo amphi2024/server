@@ -14,14 +14,19 @@ import com.amphi.server.services.event.EventPostgresService
 import com.amphi.server.services.event.EventSqliteService
 import com.amphi.server.services.trash.TrashPostgresService
 import com.amphi.server.services.trash.TrashSqliteService
-import com.amphi.server.utils.checkForUpdates
 import com.amphi.server.common.sendNotFound
+import com.amphi.server.configs.ServerPostgresDatabase
+import com.amphi.server.configs.ServerSqliteDatabase
 import com.amphi.server.routes.CloudRouter
 import com.amphi.server.routes.PhotosRouter
+import com.amphi.server.utils.deleteObsoleteCloudFiles
+import com.amphi.server.utils.deleteObsoleteFilesInTrash
+import com.amphi.server.utils.migrateNotes
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Handler
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpServerRequest
+import java.io.File
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -100,7 +105,12 @@ fun main() {
 
     println("Server is running. Let's go! (port: ${ServerSettings.port}, version: $VERSION)")
     Runtime.getRuntime().addShutdownHook(Thread {
-        ServerDatabase.close()
+        if(ServerSettings.databaseType == SQLITE) {
+            ServerSqliteDatabase.close()
+        }
+        else {
+            ServerPostgresDatabase.close()
+        }
     })
 
     val scheduler = Executors.newScheduledThreadPool(1)
@@ -108,11 +118,19 @@ fun main() {
     val task = Runnable {
         try {
 
-            ServerDatabase.syncTokensLastAccess()
-            ServerDatabase.deleteObsoleteTokens()
-            ServerFileUtils.organizeFiles()
-            if(ServerSettings.autoUpdate) {
-                checkForUpdates()
+            authorizationService.syncTokensLastAccess()
+            authorizationService.deleteObsoleteTokens()
+            val users = File("users")
+            val trashLogs = trashService.getTrashLogs()
+            if (users.exists()) {
+                users.listFiles()?.forEach { userDirectory ->
+                    deleteObsoleteCloudFiles(userDirectory)
+
+                    val trash = File("users/${userDirectory.name}/trash")
+                    deleteObsoleteFilesInTrash(trash, trashLogs)
+
+                    migrateNotes(userDirectory)
+                }
             }
         } catch (e: Exception) {
             e.printStackTrace()

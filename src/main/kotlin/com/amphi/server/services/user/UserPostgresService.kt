@@ -1,10 +1,11 @@
 package com.amphi.server.services.user
 
+import com.amphi.server.configs.ServerPostgresDatabase.connection
 import io.vertx.core.json.JsonArray
 
 class UserPostgresService : UserService {
   override fun getUserIds(): JsonArray {
-    TODO("Not yet implemented")
+      TODO("Not yet implemented")
   }
 
   override fun logout(token: String) {

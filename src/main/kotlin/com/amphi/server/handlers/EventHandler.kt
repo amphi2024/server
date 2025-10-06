@@ -1,62 +1,39 @@
 package com.amphi.server.handlers
 
 import io.vertx.core.http.HttpServerRequest
-import com.amphi.server.common.Messages
-import com.amphi.server.ServerDatabase
-import com.amphi.server.common.sendAuthFailed
+import com.amphi.server.authorizationService
+import com.amphi.server.common.handleAuthorization
 import com.amphi.server.common.sendBadRequest
+import com.amphi.server.common.sendSuccess
+import com.amphi.server.eventService
 
 object EventHandler {
 
     fun getEvents(req: HttpServerRequest, appType: String) {
         val requestToken = req.headers()["Authorization"]
-        if (requestToken.isNullOrBlank()) {
-            sendAuthFailed(req)
-        } else {
-            ServerDatabase.authenticateByToken(
-                token = requestToken,
-                onFailed = {
-                    sendAuthFailed(req)
-                },
-                onAuthenticated = {
-                    ServerDatabase.syncTokensLastAccess()
-                    val jsonArray = ServerDatabase.getEvents(requestToken, appType)
-                    req.response().putHeader("content-type", "application/json; charset=UTF-8").end(jsonArray.encode())
-                }
-            )
-
+        handleAuthorization(req) {
+            authorizationService.syncTokensLastAccess()
+            val jsonArray = eventService.getEvents(requestToken, appType)
+            req.response().putHeader("content-type", "application/json; charset=UTF-8").end(jsonArray.encode())
         }
     }
 
     fun acknowledgeEvent(req: HttpServerRequest) {
-        req.bodyHandler { buffer ->
-            val jsonBody = buffer.toJsonObject()
-            if (jsonBody == null) {
-                sendAuthFailed(req)
-            } else {
-                val requestToken = req.headers()["Authorization"]
+        handleAuthorization(req) {token ->
+            req.bodyHandler { buffer ->
+                val jsonBody = buffer.toJsonObject()
                 val action = jsonBody.getString("action")
                 val value = jsonBody.getString("value")
-
-                if (requestToken.isNullOrBlank() || action.isNullOrBlank() || value.isNullOrBlank()) {
+                if (jsonBody == null || action == null || value == null) {
                     sendBadRequest(req)
                 } else {
-                    ServerDatabase.authenticateByToken(
-                        token = requestToken,
-                        onFailed = {
-                            sendAuthFailed(req)
-                        },
-                        onAuthenticated = {
-                            println("event is acknowledged  $action, $value, $requestToken")
-                            ServerDatabase.acknowledgeEvent(
-                                token = requestToken,
-                                action = action,
-                                value = value,
-                            )
-                            req.response().putHeader("content-type", "text/plain").end(Messages.SUCCESS)
-                        }
+                    //println("event is acknowledged  $action, $value, $requestToken")
+                    eventService.acknowledgeEvent(
+                        token = token.token,
+                        action = action,
+                        value = value,
                     )
-
+                    sendSuccess(req)
                 }
             }
         }

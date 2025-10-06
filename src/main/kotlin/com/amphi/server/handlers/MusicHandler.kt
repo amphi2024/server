@@ -1,14 +1,14 @@
 package com.amphi.server.handlers
 
 import com.amphi.server.common.Messages
-import com.amphi.server.ServerDatabase
-
 import com.amphi.server.models.Token
 import com.amphi.server.common.sendFileNotExists
 import com.amphi.server.common.sendNotFound
 import com.amphi.server.common.sendSuccess
 import com.amphi.server.common.sendUploadFailed
 import com.amphi.server.common.handleAuthorization
+import com.amphi.server.eventService
+import com.amphi.server.trashService
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
@@ -87,7 +87,7 @@ object MusicHandler {
 
                 val file = File("${directory.path}/info.json")
                 file.writeText(buffer.toString())
-                ServerDatabase.saveEvent(token = token, action = eventName, value = id, appType = "music")
+                eventService.saveEvent(token = token, action = eventName, value = id, appType = "music")
 
                 sendSuccess(req)
             }
@@ -105,7 +105,7 @@ object MusicHandler {
 
                 upload.streamToFileSystem("${directory.path}/${filename}").onComplete { ar ->
                     if (ar.succeeded()) {
-                        ServerDatabase.saveEvent(token = token, action = eventName, value = "$id;$filename", appType = "music")
+                        eventService.saveEvent(token = token, action = eventName, value = "$id;$filename", appType = "music")
                         sendSuccess(req)
                     } else {
                         sendUploadFailed(req)
@@ -173,8 +173,8 @@ object MusicHandler {
                     Paths.get("${trashes.path}/${filename}"),
                     StandardCopyOption.REPLACE_EXISTING
                 )
-                ServerDatabase.notifyFileDelete("${trashes.path}/${filename}")
-                ServerDatabase.saveEvent(
+                trashService.notifyFileDelete("${trashes.path}/${filename}")
+                eventService.saveEvent(
                     token = token,
                     action = eventName,
                     value = filename,
@@ -282,7 +282,7 @@ object MusicHandler {
             req.bodyHandler { buffer ->
                 val file = File("users/${token.userId}/music/playlists/$id.playlist")
                 file.writeText(buffer.toString())
-                ServerDatabase.saveEvent(token = token, action = "upload_playlist", value = id, appType = "music")
+                eventService.saveEvent(token = token, action = "upload_playlist", value = id, appType = "music")
 
                 sendSuccess(req)
             }
@@ -299,7 +299,7 @@ object MusicHandler {
 
                 upload.streamToFileSystem(file.path).onComplete { ar ->
                     if (ar.succeeded()) {
-                        ServerDatabase.saveEvent(token = token, action = "upload_playlist_thumbnail", value = filename, appType = "music")
+                        eventService.saveEvent(token = token, action = "upload_playlist_thumbnail", value = filename, appType = "music")
                         sendSuccess(req)
                     } else {
                         sendUploadFailed(req)
@@ -339,8 +339,8 @@ object MusicHandler {
                     Paths.get("${trashes.path}/${filename}.playlist"),
                     StandardCopyOption.REPLACE_EXISTING
                 )
-                ServerDatabase.notifyFileDelete("${trashes.path}/${filename}.playlist")
-                ServerDatabase.saveEvent(
+                trashService.notifyFileDelete("${trashes.path}/${filename}.playlist")
+                eventService.saveEvent(
                     token = token,
                     action = "delete_playlist",
                     value = filename,
@@ -365,7 +365,7 @@ object MusicHandler {
 
                     val file = File("${directory.path}/${filename}")
                     file.writeText(buffer.toString())
-                    ServerDatabase.saveEvent(token = token, action = "upload_song_file", value = id, appType = "music")
+                    eventService.saveEvent(token = token, action = "upload_song_file", value = id, appType = "music")
 
                     sendSuccess(req)
                 }

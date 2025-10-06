@@ -81,7 +81,7 @@ class UserSqliteService : UserService {
     }
     val string = stringBuilder.toString()
     var exists = false
-//
+
 //    for(token in tokens) {
 //      if(string == token.token) {
 //        exists = true
