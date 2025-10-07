@@ -62,17 +62,17 @@ object ThemeHandler {
     fun deleteTheme(req: HttpServerRequest, appType: String, filename: String) {
         handleAuthorization(req) { token ->
             val file = File("users/${token.userId}/${appType}/themes/$filename")
-            val trashes = File("users/${token.userId}/trashes/${appType}/themes")
-            if (!trashes.exists()) {
-                trashes.mkdirs()
+            val trash = File("users/${token.userId}/trash/${appType}/themes")
+            if (!trash.exists()) {
+                trash.mkdirs()
             }
             if (file.exists()) {
                 Files.move(
                     file.toPath(),
-                    Paths.get("${trashes.path}/${filename}"),
+                    Paths.get("${trash.path}/${filename}"),
                     StandardCopyOption.REPLACE_EXISTING
                 )
-                trashService.notifyFileDelete("${trashes.path}/${filename}")
+                trashService.notifyFileDelete("${trash.path}/${filename}")
                 eventService.saveEvent(
                     token = token,
                     action = "delete_theme",

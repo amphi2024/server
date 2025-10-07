@@ -163,17 +163,17 @@ object MusicHandler {
 
         handleAuthorization(req) { token ->
             val file = File("users/${token.userId}/music/${directoryName}/${filename[0]}/${filename[1]}/${filename}")
-            val trashes = File("users/${token.userId}/trashes/music/${directoryName}")
-            if (!trashes.exists()) {
-                trashes.mkdirs()
+            val trash = File("users/${token.userId}/trash/music/${directoryName}")
+            if (!trash.exists()) {
+                trash.mkdirs()
             }
             if (file.exists()) {
                 Files.move(
                     file.toPath(),
-                    Paths.get("${trashes.path}/${filename}"),
+                    Paths.get("${trash.path}/${filename}"),
                     StandardCopyOption.REPLACE_EXISTING
                 )
-                trashService.notifyFileDelete("${trashes.path}/${filename}")
+                trashService.notifyFileDelete("${trash.path}/${filename}")
                 eventService.saveEvent(
                     token = token,
                     action = eventName,
@@ -329,17 +329,17 @@ object MusicHandler {
         val filename = split[3]
         handleAuthorization(req) {token ->
             val file = File("users/${token.userId}/music/playlists/${filename}.playlist")
-            val trashes = File("users/${token.userId}/trashes/music/playlists")
-            if (!trashes.exists()) {
-                trashes.mkdirs()
+            val trash = File("users/${token.userId}/trash/music/playlists")
+            if (!trash.exists()) {
+                trash.mkdirs()
             }
             if (file.exists()) {
                 Files.move(
                     file.toPath(),
-                    Paths.get("${trashes.path}/${filename}.playlist"),
+                    Paths.get("${trash.path}/${filename}.playlist"),
                     StandardCopyOption.REPLACE_EXISTING
                 )
-                trashService.notifyFileDelete("${trashes.path}/${filename}.playlist")
+                trashService.notifyFileDelete("${trash.path}/${filename}.playlist")
                 eventService.saveEvent(
                     token = token,
                     action = "delete_playlist",

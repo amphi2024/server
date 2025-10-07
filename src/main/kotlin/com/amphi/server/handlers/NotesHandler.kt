@@ -68,17 +68,17 @@ object NotesHandler {
         val filename = split[2]
         handleAuthorization(req) { token ->
             val file = File("users/${token.userId}/notes/notes/$filename")
-            val trashes = File("users/${token.userId}/trashes/notes/notes")
-            if (!trashes.exists()) {
-                trashes.mkdirs()
+            val trash = File("users/${token.userId}/trash/notes/notes")
+            if (!trash.exists()) {
+                trash.mkdirs()
             }
             if (file.exists()) {
                 Files.move(
                     file.toPath(),
-                    Paths.get("${trashes.path}/${filename}"),
+                    Paths.get("${trash.path}/${filename}"),
                     StandardCopyOption.REPLACE_EXISTING
                 )
-                trashService.notifyFileDelete("${trashes.path}/${filename}")
+                trashService.notifyFileDelete("${trash.path}/${filename}")
                 eventService.saveEvent(
                     token = token,
                     action = "delete_note",
@@ -159,17 +159,17 @@ object NotesHandler {
         val filename = split[4]
         handleAuthorization(req) { token ->
             val file = File("users/${token.userId}/notes/notes/$noteFileNameOnly/${directoryName}/$filename")
-            val trashes = File("users/${token.userId}/trashes/notes/notes/$noteFileNameOnly/${directoryName}")
-            if (!trashes.exists()) {
-                trashes.mkdirs()
+            val trash = File("users/${token.userId}/trash/notes/notes/$noteFileNameOnly/${directoryName}")
+            if (!trash.exists()) {
+                trash.mkdirs()
             }
             if (file.exists()) {
                 Files.move(
                     file.toPath(),
-                    Paths.get("${trashes.path}/${filename}"),
+                    Paths.get("${trash.path}/${filename}"),
                     StandardCopyOption.REPLACE_EXISTING
                 )
-                trashService.notifyFileDelete("${trashes.path}/${filename}")
+                trashService.notifyFileDelete("${trash.path}/${filename}")
                 sendSuccess(req)
             } else {
                 sendFileNotExists(req)

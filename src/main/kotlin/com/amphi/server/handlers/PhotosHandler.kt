@@ -63,17 +63,17 @@ object PhotosHandler {
         val id = split[3]
         handleAuthorization(req) {token ->
             val file = File("users/${token.userId}/photos/albums/$id.album")
-            val trashes = File("users/${token.userId}/trashes/photos/albums")
-            if (!trashes.exists()) {
-                trashes.mkdirs()
+            val trash = File("users/${token.userId}/trash/photos/albums")
+            if (!trash.exists()) {
+                trash.mkdirs()
             }
             if (file.exists()) {
                 Files.move(
                     file.toPath(),
-                    Paths.get("${trashes.path}/${id}.album"),
+                    Paths.get("${trash.path}/${id}.album"),
                     StandardCopyOption.REPLACE_EXISTING
                 )
-                trashService.notifyFileDelete("${trashes.path}/${id}.album")
+                trashService.notifyFileDelete("${trash.path}/${id}.album")
                 eventService.saveEvent(
                     token = token,
                     action = "delete_album",
@@ -252,17 +252,17 @@ object PhotosHandler {
         val id = split[2]
         handleAuthorization(req) {token ->
             val file = photoDirectoryById(token.userId, id)
-            val trashes = File("users/${token.userId}/trashes/photos/library")
-            if (!trashes.exists()) {
-                trashes.mkdirs()
+            val trash = File("users/${token.userId}/trash/photos/library")
+            if (!trash.exists()) {
+                trash.mkdirs()
             }
             if (file.exists()) {
                 Files.move(
                     file.toPath(),
-                    Paths.get("${trashes.path}/${id}"),
+                    Paths.get("${trash.path}/${id}"),
                     StandardCopyOption.REPLACE_EXISTING
                 )
-                trashService.notifyFileDelete("${trashes.path}/${id}")
+                trashService.notifyFileDelete("${trash.path}/${id}")
                 eventService.saveEvent(
                     token = token,
                     action = "delete_photo",

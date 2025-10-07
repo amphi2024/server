@@ -21,7 +21,7 @@ import com.amphi.server.routes.CloudRouter
 import com.amphi.server.routes.PhotosRouter
 import com.amphi.server.utils.deleteObsoleteCloudFiles
 import com.amphi.server.utils.deleteObsoleteFilesInTrash
-import com.amphi.server.utils.migrateNotes
+import com.amphi.server.utils.migration.migrateNotes
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Handler
 import io.vertx.core.Vertx
@@ -67,7 +67,7 @@ class App : AbstractVerticle(), Handler<HttpServerRequest> {
         vertx.createHttpServer().requestHandler{req ->
 
             val ipAddress = req.remoteAddress().hostAddress()
-            println("request - ip: $ipAddress, ${req.path()} ${req.method().name()}")
+            //println("request - ip: $ipAddress, ${req.path()} ${req.method().name()}")
             if(RateLimiter.isAllowed(ipAddress)) {
                 if(ServerSettings.whitelistOnly) {
                     if(ServerSettings.inWhiteList(ipAddress)) {
@@ -124,6 +124,12 @@ fun main() {
             val trashLogs = trashService.getTrashLogs()
             if (users.exists()) {
                 users.listFiles()?.forEach { userDirectory ->
+                    val oldTrash = File("${userDirectory.path}/trashes")
+
+                    if(oldTrash.exists() && oldTrash.listFiles().isNullOrEmpty()) {
+                        oldTrash.delete()
+                    }
+
                     deleteObsoleteCloudFiles(userDirectory)
 
                     val trash = File("users/${userDirectory.name}/trash")
