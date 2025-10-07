@@ -1,12 +1,11 @@
 package com.amphi.server.models
 
-import com.amphi.server.models.FileModel
 import java.sql.DriverManager
 import java.sql.ResultSet
 import java.time.Instant
 import kotlin.random.Random
 
-class CloudAppDatabase(val userId: String) {
+class CloudDatabase(val userId: String) {
     private val connection =
         DriverManager.getConnection("jdbc:sqlite:users/${userId}/cloud/cloud.db")
 
@@ -63,7 +62,7 @@ class CloudAppDatabase(val userId: String) {
         val chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
         while (true) {
-            val length = Random.Default.nextInt(5) + 30
+            val length = Random.nextInt(5) + 30
             val id = (1..length)
                 .map { chars.random() }
                 .joinToString("")
@@ -137,7 +136,7 @@ class CloudAppDatabase(val userId: String) {
         }
         val resultSet: ResultSet = statement.executeQuery()
         while (resultSet.next()) {
-            list.add(FileModel.Companion.fromResultSet(resultSet))
+            list.add(FileModel.fromResultSet(resultSet))
         }
 
         resultSet.close()
@@ -153,7 +152,7 @@ class CloudAppDatabase(val userId: String) {
         statement.setString(1, id)
         val resultSet: ResultSet = statement.executeQuery()
         while (resultSet.next()) {
-            fileModel = FileModel.Companion.fromResultSet(resultSet)
+            fileModel = FileModel.fromResultSet(resultSet)
         }
         statement.close()
         return fileModel
@@ -171,7 +170,7 @@ class CloudAppDatabase(val userId: String) {
                 statement.setString(1, fileModel.id)
                 val resultSet = statement.executeQuery()
                 while(resultSet.next()) {
-                    val child = FileModel.Companion.fromResultSet(resultSet)
+                    val child = FileModel.fromResultSet(resultSet)
                     deleteFile(child)
                 }
             }
@@ -191,7 +190,7 @@ class CloudAppDatabase(val userId: String) {
         statement.setString(1, id)
         val resultSet: ResultSet = statement.executeQuery()
         while (resultSet.next()) {
-            val fileModel = FileModel.Companion.fromResultSet(resultSet)
+            val fileModel = FileModel.fromResultSet(resultSet)
             list.add(fileModel)
         }
         statement.close()

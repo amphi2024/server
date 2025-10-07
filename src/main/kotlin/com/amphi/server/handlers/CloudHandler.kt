@@ -9,7 +9,7 @@ import com.amphi.server.common.sendNotFound
 import com.amphi.server.common.sendSuccess
 import com.amphi.server.common.sendUploadFailed
 import com.amphi.server.configs.ServerSettings
-import com.amphi.server.models.CloudAppDatabase
+import com.amphi.server.models.CloudDatabase
 import com.amphi.server.models.FileModel
 import com.amphi.server.trashService
 import com.amphi.server.utils.contentTypeByExtension
@@ -39,7 +39,7 @@ object CloudHandler {
                 if(!cloudDirectory.exists()) {
                     cloudDirectory.mkdirs()
                 }
-                val database = CloudAppDatabase(token.userId)
+                val database = CloudDatabase(token.userId)
                 val id = database.generateUniqueFileId()
                 val directoryPath = fileDirectoryPathById(token.userId, id)
                 val file = File("$directoryPath/1")
@@ -70,7 +70,7 @@ object CloudHandler {
             req.isExpectMultipart = true
             req.uploadHandler { upload ->
                 val directory = fileDirectoryById(token.userId, id)
-                val database = CloudAppDatabase(token.userId)
+                val database = CloudDatabase(token.userId)
                 val fileModel = database.getLatestFileModelById(id)
                 database.close()
                 if (fileModel == null) {
@@ -102,7 +102,7 @@ object CloudHandler {
     fun getFiles(req: HttpServerRequest) {
         handleAuthorization(req) {token ->
             val jsonArray = JsonArray()
-            val database = CloudAppDatabase(token.userId)
+            val database = CloudDatabase(token.userId)
             val list = database.getFiles(null)
             list.forEach { item ->
                 jsonArray.add(item.toJsonObject())
@@ -117,7 +117,7 @@ object CloudHandler {
     fun downloadFileInfo(req: HttpServerRequest, split: List<String>) {
         handleAuthorization(req) { token ->
             val id = split[3]
-            val database = CloudAppDatabase(token.userId)
+            val database = CloudDatabase(token.userId)
             val fileModel = database.getLatestFileModelById(id)
             database.close()
 
@@ -135,7 +135,7 @@ object CloudHandler {
         handleAuthorization(req) { token ->
             req.bodyHandler { buffer ->
                 val id = split[3]
-                val database = CloudAppDatabase(token.userId)
+                val database = CloudDatabase(token.userId)
                 val originalFileModel = database.getLatestFileModelById(id)
                 if (originalFileModel != null) {
                     val fileModel = FileModel.fromRequestBuffer(id, buffer)
@@ -155,7 +155,7 @@ object CloudHandler {
         val version = 1
         handleAuthorization(req) {token ->
             val directoryPath = fileDirectoryPathById(token.userId, id)
-            val database = CloudAppDatabase(token.userId)
+            val database = CloudDatabase(token.userId)
             val fileModel = database.getLatestFileModelById(id)
             database.close()
             if (fileModel == null) {
@@ -177,7 +177,7 @@ object CloudHandler {
     fun deleteFile(req: HttpServerRequest, split: List<String>) {
         handleAuthorization(req) { token ->
             val id = split[3]
-            val database = CloudAppDatabase(token.userId)
+            val database = CloudDatabase(token.userId)
             val fileModel = database.getLatestFileModelById(id)
             if (fileModel != null) {
                 database.deleteFile(fileModel)
@@ -186,7 +186,7 @@ object CloudHandler {
             database.close()
 
             val file = fileDirectoryById(token.userId, id)
-            val trash = File("users/${token.userId}/trashes/cloud/files")
+            val trash = File("users/${token.userId}/trash/cloud/files")
             if (!trash.exists()) {
                 trash.mkdirs()
             }
