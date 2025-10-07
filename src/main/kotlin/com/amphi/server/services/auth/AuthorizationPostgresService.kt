@@ -18,4 +18,8 @@ class AuthorizationPostgresService : AuthorizationService {
     override fun syncTokensLastAccess() {
         TODO("Not yet implemented")
     }
+
+    override fun getTokens(): List<Token> {
+        TODO("Not yet implemented")
+    }
 }

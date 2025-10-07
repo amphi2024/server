@@ -6,6 +6,7 @@ interface AuthorizationService {
   fun authenticateByToken(token: String, onAuthenticated: (Token) -> Unit, onFailed: () -> Unit)
   fun deleteObsoleteTokens()
   fun generatedToken(): String
-
   fun syncTokensLastAccess()
+
+    fun getTokens(): List<Token>
 }

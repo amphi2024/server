@@ -142,4 +142,8 @@ class AuthorizationSqliteService : AuthorizationService {
             preparedStatement.close()
         }
     }
+
+    override fun getTokens(): List<Token> {
+        return tokens
+    }
 }
