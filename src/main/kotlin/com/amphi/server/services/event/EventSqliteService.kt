@@ -1,5 +1,7 @@
 package com.amphi.server.services.event
 
+import com.amphi.server.authorizationService
+import com.amphi.server.configs.ServerSqliteDatabase
 import com.amphi.server.configs.ServerSqliteDatabase.connection
 import com.amphi.server.models.Token
 import io.vertx.core.json.JsonArray
@@ -35,24 +37,30 @@ class EventSqliteService : EventService {
     value: String,
     appType: String?
   ) {
-//      for(item in tokens) {
-//          if(item.userId == token.userId && item.token != token.token) {
-//              //println("saved event ${item.userId}, ${item.token}, ${item.deviceName}, $action, $appType")
-//              val sql = "INSERT INTO events (token, action, value, timestamp, app_type) VALUES ( ? , ? , ?, ?, ? );"
-//              val preparedStatement = ServerDatabase.connection.prepareStatement(sql)
-//              preparedStatement.setString(1, item.token)
-//              preparedStatement.setString(2, action)
-//              preparedStatement.setString(3, value)
-//              preparedStatement.setLong(4, Instant.now().toEpochMilli())
-//              preparedStatement.setString(5, appType)
-//              preparedStatement.executeUpdate()
-//              preparedStatement.close()
-//          }
-//      }
+      for(item in authorizationService.getTokens()) {
+          if(item.userId == token.userId && item.token != token.token) {
+              //println("saved event ${item.userId}, ${item.token}, ${item.deviceName}, $action, $appType")
+              val sql = "INSERT INTO events (token, action, value, timestamp, app_type) VALUES ( ? , ? , ?, ?, ? );"
+              val preparedStatement = connection.prepareStatement(sql)
+              preparedStatement.setString(1, item.token)
+              preparedStatement.setString(2, action)
+              preparedStatement.setString(3, value)
+              preparedStatement.setLong(4, Instant.now().toEpochMilli())
+              preparedStatement.setString(5, appType)
+              preparedStatement.executeUpdate()
+              preparedStatement.close()
+          }
+      }
   }
 
   override fun acknowledgeEvent(token: String, action: String, value: String) {
-    TODO("Not yet implemented")
+      val sql = "DELETE FROM events WHERE token = ? AND action = ? AND value = ?;"
+      val preparedStatement = connection.prepareStatement(sql)
+      preparedStatement.setString(1, token)
+      preparedStatement.setString(2, action)
+      preparedStatement.setString(3, value)
+      preparedStatement.executeUpdate()
+      preparedStatement.close()
   }
 
 }
