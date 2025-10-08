@@ -5,7 +5,6 @@ import io.vertx.core.json.JsonObject
 import java.sql.DriverManager
 import java.sql.PreparedStatement
 import java.sql.Types
-import kotlin.random.Random
 
 class NotesDatabase(val userId: String) {
 
@@ -69,25 +68,25 @@ class NotesDatabase(val userId: String) {
         }
     }
 
-    fun generatedId(): String {
-        val chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-
-        while (true) {
-            val length = Random.nextInt(5) + 30
-            val id = (1..length)
-                .map { chars.random() }
-                .joinToString("")
-
-            val sql = "SELECT COUNT(*) FROM notes WHERE id = ?"
-            connection.prepareStatement(sql).use { stmt ->
-                stmt.setString(1, id)
-                val rs = stmt.executeQuery()
-                if (rs.next() && rs.getInt(1) == 0) {
-                    return id
-                }
-            }
-        }
-    }
+//    fun generatedId(): String {
+//        val chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+//
+//        while (true) {
+//            val length = Random.nextInt(5) + 30
+//            val id = (1..length)
+//                .map { chars.random() }
+//                .joinToString("")
+//
+//            val sql = "SELECT COUNT(*) FROM notes WHERE id = ?"
+//            connection.prepareStatement(sql).use { stmt ->
+//                stmt.setString(1, id)
+//                val rs = stmt.executeQuery()
+//                if (rs.next() && rs.getInt(1) == 0) {
+//                    return id
+//                }
+//            }
+//        }
+//    }
 
     fun insertNote(note: Note) {
         val sql = """
@@ -101,17 +100,6 @@ class NotesDatabase(val userId: String) {
         preparedStatement.setNote(note)
         preparedStatement.executeUpdate()
         preparedStatement.close()
-    }
-    fun applyIdChanges(idChanges: MutableMap<String, String>) {
-        val sql = "UPDATE notes SET parent_id = ? WHERE parent_id = ?;"
-        val statement = connection.prepareStatement(sql)
-        idChanges.forEach { (oldId, newId) ->
-            statement.setString(1, newId)
-            statement.setString(2, oldId)
-            statement.addBatch()
-        }
-        statement.executeBatch()
-        statement.close()
     }
 
     fun insertTheme(id: String, jsonObject: JsonObject) {
@@ -127,11 +115,46 @@ class NotesDatabase(val userId: String) {
         statement.executeUpdate()
         statement.close()
     }
+
+    fun getNotes() : List<Note> {
+        val sql = "SELECT * FROM notes;"
+        val list = mutableListOf<Note>()
+        val statement = connection.createStatement()
+        val resultSet = statement.executeQuery(sql)
+        while(resultSet.next()) {
+            val note = Note.fromResultSet(resultSet)
+            list.add(note)
+        }
+
+        resultSet.close()
+        statement.close()
+
+        return list
+    }
+
+    fun getNoteById(id: String) : Note? {
+        val sql = "SELECT * FROM notes WHERE id = ?;"
+        val statement = connection.prepareStatement(sql)
+        statement.setString(1, id)
+        val resultSet = statement.executeQuery()
+        if(resultSet.next()) {
+            val note = Note.fromResultSet(resultSet)
+            resultSet.close()
+            statement.close()
+            return note
+        }
+        else {
+            resultSet.close()
+            statement.close()
+            return null
+        }
+
+    }
 }
 
 fun PreparedStatement.setNote(note: Note) {
     setString(1, note.id)
-    setString(2, note.content.toString())
+    setNullable(2, if(note.isFolder) null else note.content.toString(), Types.VARCHAR)
     setLong(3, note.created)
     setLong(4, note.modified)
     setNullable(5, note.deleted, Types.INTEGER)

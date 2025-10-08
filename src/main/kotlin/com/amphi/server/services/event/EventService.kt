@@ -7,5 +7,4 @@ interface EventService {
     fun getEvents(token: String, appType: String): JsonArray
     fun saveEvent(token: Token, action: String, value: String, appType: String?)
     fun acknowledgeEvent(token: String, action: String, value: String)
-    fun notifyNotesMigration(userId: String, idChanges: MutableMap<String, String>)
 }

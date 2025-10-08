@@ -3,6 +3,7 @@ package com.amphi.server.models
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import java.io.File
+import java.sql.ResultSet
 
 class Note(
     var id: String,
@@ -13,7 +14,7 @@ class Note(
     var textColor: Long? = null,
     var textSize: Double? = null,
     var lineHeight: Double? = null,
-    var parentId: String = "",
+    var parentId: String? = null,
     var modified: Long,
     val created: Long,
     var deleted: Long? = null,
@@ -23,26 +24,58 @@ class Note(
 ) {
 
     companion object {
+
+        fun fromResultSet(resultSet: ResultSet) : Note {
+            return Note(
+                id = resultSet.getString("id"),
+                title = resultSet.getObject("title") as? String,
+                subtitle = resultSet.getObject("subtitle") as? String,
+                backgroundColor = resultSet.getObject("background_color")?.let { (it as Number).toLong() },
+                background = resultSet.getObject("background") as? String,
+                textColor = resultSet.getObject("text_color")?.let { (it as Number).toLong() },
+                textSize = resultSet.getObject("text_size")?.let { (it as Number).toDouble() },
+                lineHeight = resultSet.getObject("line_height")?.let { (it as Number).toDouble() },
+                parentId = resultSet.getString("parent_id") ?: "",
+                modified = resultSet.getLong("modified"),
+                created = resultSet.getLong("created"),
+                deleted = resultSet.getObject("deleted")?.let { (it as Number).toLong() },
+                content = resultSet.getObject("content")?.let { value ->
+                    JsonArray(value as? String)
+                } ?: JsonArray(),
+                isFolder = resultSet.getBoolean("is_folder"),
+                version = resultSet.getObject("version")?.let { (it as Number).toInt() }
+            )
+        }
+
         fun legacy(file: File) : Note {
             try {
                 val jsonObject = JsonObject(file.readText())
                 println(jsonObject)
+                val location = jsonObject.getValue("location") as? String
+                var parentId = location?.split(".folder")?.firstOrNull()
+                if(parentId != null) {
+                    parentId = if(parentId.isEmpty()) {
+                        null
+                    } else {
+                        "${parentId}legacyfolder"
+                    }
+                }
 
                 if(file.extension == "folder") {
                     return Note(
-                        id = file.nameWithoutExtension,
+                        id = "${file.nameWithoutExtension}legacyfolder",
                         title = jsonObject.getString("name"),
                         content = JsonArray(),
                         created = jsonObject.getLong("created"),
                         modified = jsonObject.getLong("modified"),
                         deleted = jsonObject.getValue("deleted") as? Long,
                         isFolder = true,
-                        parentId = jsonObject.getString("location").split(".folder").first()
+                        parentId = parentId
                     )
                 }
                 else {
                     return Note(
-                        id = file.nameWithoutExtension,
+                        id = "${file.nameWithoutExtension}legacynote",
                         content = jsonObject.getJsonArray("contents"),
                         created = jsonObject.getLong("created"),
                         modified = jsonObject.getLong("modified"),
@@ -52,7 +85,7 @@ class Note(
                         textColor = jsonObject.getValue("textColor") as? Long,
                         textSize = jsonObject.getValue("textSize") as? Double,
                         lineHeight = jsonObject.getValue("lineHeight") as? Double,
-                        parentId = jsonObject.getString("location").split(".folder").first()
+                        parentId = parentId
                     )
                 }
             }
@@ -86,6 +119,28 @@ class Note(
                 file.delete()
             }
         }
+    }
+
+    fun toJsonObject(): JsonObject {
+        val jsonObject = JsonObject()
+
+        jsonObject.put("id", id)
+        jsonObject.put("title", title)
+        jsonObject.put("subtitle", subtitle)
+        jsonObject.put("background_color", backgroundColor)
+        jsonObject.put("background", background)
+        jsonObject.put("text_color", textColor)
+        jsonObject.put("textSize", textSize)
+        jsonObject.put("line_height", lineHeight)
+        jsonObject.put("parent_id", parentId)
+        jsonObject.put("modified", modified)
+        jsonObject.put("created", created)
+        jsonObject.put("deleted", deleted)
+        jsonObject.put("content", if(isFolder) null else content.toString())
+        jsonObject.put("is_folder", if(isFolder) 1 else 0)
+        jsonObject.put("version", version)
+
+        return jsonObject
     }
 
 }

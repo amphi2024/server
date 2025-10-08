@@ -1,7 +1,6 @@
 package com.amphi.server.services.event
 
 import com.amphi.server.authorizationService
-import com.amphi.server.configs.ServerSqliteDatabase
 import com.amphi.server.configs.ServerSqliteDatabase.connection
 import com.amphi.server.models.Token
 import io.vertx.core.json.JsonArray
@@ -61,25 +60,6 @@ class EventSqliteService : EventService {
         preparedStatement.setString(3, value)
         preparedStatement.executeUpdate()
         preparedStatement.close()
-    }
-
-    override fun notifyNotesMigration(userId: String, idChanges: MutableMap<String, String>) {
-        val sql = "INSERT INTO events (token, action, value, timestamp, app_type) VALUES ( ? , ? , ?, ?, 'notes' );"
-        val statement = connection.prepareStatement(sql)
-        val tokens = authorizationService.getTokens()
-        idChanges.forEach { (oldId, newId) ->
-            for (item in tokens)
-                if (item.userId == userId) {
-                    statement.setString(1, item.token)
-                    statement.setString(2, "id_change")
-                    statement.setString(3, "$oldId;$newId")
-                    statement.setLong(4, Instant.now().toEpochMilli())
-                    statement.addBatch()
-                }
-        }
-
-        statement.executeBatch()
-        statement.close()
     }
 }
 

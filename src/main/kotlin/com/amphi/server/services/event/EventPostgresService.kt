@@ -20,8 +20,4 @@ class EventPostgresService : EventService {
   override fun acknowledgeEvent(token: String, action: String, value: String) {
     TODO("Not yet implemented")
   }
-
-    override fun notifyNotesMigration(userId: String, idChanges: MutableMap<String, String>) {
-        TODO("Not yet implemented")
-    }
 }

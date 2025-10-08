@@ -27,23 +27,17 @@ fun migrateNotes(userDirectory: File) {
 
     val database = NotesDatabase(userDirectory.name)
 
-    val idChanges = mutableMapOf<String, String>()
     notesDirectory.listFiles()?.forEach { file ->
 
         if (file.isFile && file.extension != "db") {
             val note = Note.legacy(file)
-            val newId = database.generatedId()
-            idChanges[note.id] = newId
-            note.id = newId
             database.insertNote(note)
 
             moveOldNoteFileToTrash(file = file, userId = userId)
 
-            moveOldAttachments(file = file, userId = userId, newId = newId)
+            moveOldAttachments(file = file, userId = userId, newId = note.id)
         }
     }
-    database.applyIdChanges(idChanges)
-    eventService.notifyNotesMigration(userDirectory.name, idChanges)
 
     migrateThemes(userDirectory, database)
 
