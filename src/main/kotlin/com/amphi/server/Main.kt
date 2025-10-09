@@ -19,6 +19,7 @@ import com.amphi.server.configs.ServerPostgresDatabase
 import com.amphi.server.configs.ServerSqliteDatabase
 import com.amphi.server.routes.CloudRouter
 import com.amphi.server.routes.PhotosRouter
+import com.amphi.server.utils.RateLimiter
 import com.amphi.server.utils.deleteObsoleteCloudFiles
 import com.amphi.server.utils.deleteObsoleteFilesInTrash
 import com.amphi.server.utils.migration.migrateNotes

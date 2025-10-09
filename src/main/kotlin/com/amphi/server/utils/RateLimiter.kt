@@ -1,4 +1,4 @@
-package com.amphi.server
+package com.amphi.server.utils
 
 import com.amphi.server.configs.ServerSettings
 import java.util.concurrent.ConcurrentHashMap
