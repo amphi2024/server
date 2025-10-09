@@ -6,7 +6,9 @@ import com.amphi.server.common.sendSuccess
 import com.amphi.server.common.sendUploadFailed
 import com.amphi.server.utils.contentTypeByExtension
 import com.amphi.server.common.handleAuthorization
+import com.amphi.server.common.sendNotFound
 import com.amphi.server.eventService
+import com.amphi.server.models.NotesDatabase
 import com.amphi.server.trashService
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.json.JsonArray
@@ -20,21 +22,19 @@ object NotesHandler {
 
     fun getNotes(req: HttpServerRequest) {
         handleAuthorization(req) { token ->
+            val database = NotesDatabase(token.userId)
             val jsonArray = JsonArray()
-            val directory = File("users/${token.userId}/notes/notes")
-            if (!directory.exists()) {
-                directory.mkdirs()
-            }
-            val files = directory.listFiles()
-            if (files != null) {
-                for (file in files) {
-                    val jsonObject = JsonObject()
-                    jsonObject.put("filename", file.name)
-                    jsonObject.put("modified", file.lastModified())
-                    jsonArray.add(jsonObject)
-                }
+
+            database.getNotes().forEach { note ->
+                val jsonObject = JsonObject()
+                jsonObject.put("id", note.id)
+                jsonObject.put("created", note.created)
+                jsonObject.put("modified", note.modified)
+                jsonArray.add(jsonObject)
             }
             req.response().putHeader("content-type", "application/json; charset=UTF-8").end(jsonArray.encode())
+
+            database.close()
         }
     }
 
@@ -52,13 +52,14 @@ object NotesHandler {
     }
 
     fun downloadNote(req: HttpServerRequest, split: List<String>) {
-        val filename = split[2]
+        val id = split[2]
         handleAuthorization(req) { token ->
-            val file = File("users/${token.userId}/notes/notes/${filename}")
-            if (!file.exists()) {
-                sendFileNotExists(req)
+            val database = NotesDatabase(token.userId)
+            val note = database.getNoteById(id)
+            if (note == null) {
+                sendNotFound(req)
             } else {
-                req.response().putHeader("content-type", "application/json; charset=UTF-8").end(file.readText())
+                req.response().putHeader("content-type", "application/json; charset=UTF-8").end(note.toJsonObject().toString())
             }
         }
     }
