@@ -10,7 +10,7 @@ import io.vertx.sqlclient.SqlConnection
 
 object ServerPostgresDatabase {
 
-  lateinit var connection:  Future<SqlConnection>
+  lateinit var connection: SqlConnection
 
   fun init(vertx: Vertx) {
 
@@ -30,6 +30,12 @@ object ServerPostgresDatabase {
       .using(vertx)
       .build()
 
-    connection = pool.connection
+    pool.connection.onComplete { asyncResult ->
+        connection = asyncResult.result()
+    }
   }
+
+    fun close() {
+
+    }
 }
