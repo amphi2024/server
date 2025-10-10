@@ -5,6 +5,7 @@ import io.vertx.core.json.JsonObject
 import java.sql.DriverManager
 import java.sql.PreparedStatement
 import java.sql.Types
+import java.time.Instant
 
 class NotesDatabase(val userId: String) {
 
@@ -25,6 +26,7 @@ class NotesDatabase(val userId: String) {
                                 created INTEGER NOT NULL,
                                 modified INTEGER NOT NULL,
                                 deleted INTEGER,
+                                permanently_deleted INTEGER,
                                 is_folder BOOLEAN,
                                 parent_id TEXT,
                                 line_height INTEGER,
@@ -33,8 +35,7 @@ class NotesDatabase(val userId: String) {
                                 background_color INTEGER,
                                 background TEXT,
                                 title TEXT,
-                                subtitle TEXT,
-                                version INTEGER
+                                subtitle TEXT
                             );
                         """
                 )
@@ -93,8 +94,21 @@ class NotesDatabase(val userId: String) {
                 INSERT INTO notes (
                     id, content, created, modified, deleted, is_folder, parent_id,
                     line_height, text_size, text_color, background_color, background,
-                    title, subtitle, version
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                    title, subtitle
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                       ON CONFLICT(id) DO UPDATE SET
+                  content = excluded.content,
+                  modified = excluded.modified,
+                  deleted = excluded.deleted,
+                  is_folder = excluded.is_folder,
+                  parent_id = excluded.parent_id,
+                  line_height = excluded.line_height,
+                  text_size = excluded.text_size,
+                  text_color = excluded.text_color,
+                  background_color = excluded.background_color,
+                  background = excluded.background,
+                  title = excluded.title,
+                  subtitle = excluded.subtitle;
                 """.trimIndent()
         val preparedStatement = connection.prepareStatement(sql)
         preparedStatement.setNote(note)
@@ -150,6 +164,17 @@ class NotesDatabase(val userId: String) {
         }
 
     }
+
+    fun setNoteDeleted(id: String) {
+        val sql = """
+                UPDATE notes SET permanently_deleted = ? WHERE id = ?;
+                """.trimIndent()
+        val preparedStatement = connection.prepareStatement(sql)
+        preparedStatement.setLong(1, Instant.now().toEpochMilli())
+        preparedStatement.setString(2, id)
+        preparedStatement.executeUpdate()
+        preparedStatement.close()
+    }
 }
 
 fun PreparedStatement.setNote(note: Note) {
@@ -160,14 +185,13 @@ fun PreparedStatement.setNote(note: Note) {
     setNullable(5, note.deleted, Types.INTEGER)
     setBoolean(6, note.isFolder)
     setString(7, note.parentId)
-    setNullable(8, note.lineHeight?.toInt(), Types.INTEGER)
-    setNullable(9, note.textSize?.toInt(), Types.INTEGER)
+    setNullable(8, note.lineHeight, Types.INTEGER)
+    setNullable(9, note.textSize, Types.INTEGER)
     setNullable(10, note.textColor, Types.INTEGER)
     setNullable(11, note.backgroundColor, Types.INTEGER)
     setNullable(12, note.background, Types.VARCHAR)
     setNullable(13, note.title, Types.VARCHAR)
     setNullable(14, note.subtitle, Types.VARCHAR)
-    setNullable(15, note.version, Types.INTEGER)
 }
 
 fun PreparedStatement.setTheme(id: String, jsonObject: JsonObject) {

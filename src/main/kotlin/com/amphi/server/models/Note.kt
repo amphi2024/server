@@ -12,15 +12,14 @@ class Note(
     var backgroundColor: Long? = null,
     var background: String? = null,
     var textColor: Long? = null,
-    var textSize: Double? = null,
-    var lineHeight: Double? = null,
+    var textSize: Int? = null,
+    var lineHeight: Int? = null,
     var parentId: String? = null,
     var modified: Long,
     val created: Long,
     var deleted: Long? = null,
     val content: JsonArray,
-    val isFolder: Boolean = false,
-    var version: Int? = null
+    val isFolder: Boolean = false
 ) {
 
     companion object {
@@ -33,8 +32,8 @@ class Note(
                 backgroundColor = resultSet.getObject("background_color")?.let { (it as Number).toLong() },
                 background = resultSet.getObject("background") as? String,
                 textColor = resultSet.getObject("text_color")?.let { (it as Number).toLong() },
-                textSize = resultSet.getObject("text_size")?.let { (it as Number).toDouble() },
-                lineHeight = resultSet.getObject("line_height")?.let { (it as Number).toDouble() },
+                textSize = resultSet.getObject("text_size")?.let { (it as Number).toInt() },
+                lineHeight = resultSet.getObject("line_height")?.let { (it as Number).toInt() },
                 parentId = resultSet.getString("parent_id") ?: "",
                 modified = resultSet.getLong("modified"),
                 created = resultSet.getLong("created"),
@@ -42,15 +41,13 @@ class Note(
                 content = resultSet.getObject("content")?.let { value ->
                     JsonArray(value as? String)
                 } ?: JsonArray(),
-                isFolder = resultSet.getBoolean("is_folder"),
-                version = resultSet.getObject("version")?.let { (it as Number).toInt() }
+                isFolder = resultSet.getBoolean("is_folder")
             )
         }
 
         fun legacy(file: File) : Note {
             try {
                 val jsonObject = JsonObject(file.readText())
-                println(jsonObject)
                 val location = jsonObject.getValue("location") as? String
                 var parentId = location?.split(".folder")?.firstOrNull()
                 if(parentId != null) {
@@ -83,8 +80,8 @@ class Note(
                         isFolder = false,
                         backgroundColor = jsonObject.getValue("backgroundColor") as? Long,
                         textColor = jsonObject.getValue("textColor") as? Long,
-                        textSize = jsonObject.getValue("textSize") as? Double,
-                        lineHeight = jsonObject.getValue("lineHeight") as? Double,
+                        textSize = jsonObject.getValue("textSize") as? Int,
+                        lineHeight = jsonObject.getValue("lineHeight") as? Int,
                         parentId = parentId
                     )
                 }
@@ -138,7 +135,6 @@ class Note(
         jsonObject.put("deleted", deleted)
         jsonObject.put("content", if(isFolder) null else content.toString())
         jsonObject.put("is_folder", if(isFolder) 1 else 0)
-        jsonObject.put("version", version)
 
         return jsonObject
     }

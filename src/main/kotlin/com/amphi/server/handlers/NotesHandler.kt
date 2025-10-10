@@ -1,6 +1,5 @@
 package com.amphi.server.handlers
 
-import com.amphi.server.common.Messages
 import com.amphi.server.common.sendFileNotExists
 import com.amphi.server.common.sendSuccess
 import com.amphi.server.common.sendUploadFailed
@@ -8,6 +7,7 @@ import com.amphi.server.utils.contentTypeByExtension
 import com.amphi.server.common.handleAuthorization
 import com.amphi.server.common.sendNotFound
 import com.amphi.server.eventService
+import com.amphi.server.models.Note
 import com.amphi.server.models.NotesDatabase
 import com.amphi.server.trashService
 import io.vertx.core.http.HttpServerRequest
@@ -39,14 +39,32 @@ object NotesHandler {
     }
 
     fun uploadNote(req: HttpServerRequest, split: List<String>) {
-        val filename = split[2]
+        val id = split[2]
         handleAuthorization(req) { token ->
             req.bodyHandler { buffer ->
-                val file = File("users/${token.userId}/notes/notes/${filename}")
-                file.writeText(buffer.toString())
-                eventService.saveEvent(token = token, action = "upload_note", value = filename, appType = "notes")
+                val database = NotesDatabase(token.userId)
+                val jsonObject = buffer.toJsonObject()
+                val note = Note(
+                    id = jsonObject.getString("id"),
+                    title = jsonObject.getValue("title") as? String,
+                    subtitle = jsonObject.getValue("subtitle") as? String,
+                    backgroundColor = jsonObject.getValue("background_color") as? Long,
+                    background = jsonObject.getValue("background") as? String,
+                    textColor = jsonObject.getValue("text_color") as? Long,
+                    textSize = jsonObject.getValue("text_size") as? Int,
+                    lineHeight = jsonObject.getValue("line_height") as? Int,
+                    parentId = jsonObject.getValue("parent_id") as? String,
+                    modified = jsonObject.getLong("modified"),
+                    created = jsonObject.getLong("created"),
+                    deleted = jsonObject.getValue("deleted") as? Long,
+                    content = jsonObject.getJsonArray("content"),
+                    isFolder = jsonObject.getBoolean("is_folder")
+                )
+                database.insertNote(note)
+                eventService.saveEvent(token = token, action = "upload_note", value = id, appType = "notes")
 
                 sendSuccess(req)
+                database.close()
             }
         }
     }
@@ -61,43 +79,32 @@ object NotesHandler {
             } else {
                 req.response().putHeader("content-type", "application/json; charset=UTF-8").end(note.toJsonObject().toString())
             }
+            database.close()
         }
     }
 
 
     fun deleteNote(req: HttpServerRequest, split: List<String>) {
-        val filename = split[2]
+        val id = split[2]
         handleAuthorization(req) { token ->
-            val file = File("users/${token.userId}/notes/notes/$filename")
-            val trash = File("users/${token.userId}/trash/notes/notes")
-            if (!trash.exists()) {
-                trash.mkdirs()
-            }
-            if (file.exists()) {
-                Files.move(
-                    file.toPath(),
-                    Paths.get("${trash.path}/${filename}"),
-                    StandardCopyOption.REPLACE_EXISTING
-                )
-                trashService.notifyFileDelete("${trash.path}/${filename}")
-                eventService.saveEvent(
-                    token = token,
-                    action = "delete_note",
-                    value = filename,
-                    appType = "notes"
-                )
-                req.response().end(Messages.SUCCESS)
-            } else {
-                req.response().setStatusCode(404).end(Messages.FILE_NOT_EXISTS)
-            }
+            val database = NotesDatabase(token.userId)
+            database.setNoteDeleted(id)
+            eventService.saveEvent(
+                token = token,
+                action = "delete_note",
+                value = id,
+                appType = "notes"
+            )
+            sendSuccess(req)
+            database.close()
         }
     }
 
     fun getFiles(req: HttpServerRequest, split: List<String>, directoryName: String) {
-        val noteFileNameOnly = split[2]
+        val id = split[2]
         handleAuthorization(req) { token ->
             val jsonArray = JsonArray()
-            val directory = File("users/${token.userId}/notes/notes/$noteFileNameOnly/${directoryName}")
+            val directory = File("users/${token.userId}/notes/attachments/${id[0]}/${id[1]}/$id/${directoryName}")
             if (!directory.exists()) {
                 directory.mkdirs()
             }
@@ -116,13 +123,13 @@ object NotesHandler {
     }
 
     fun uploadFile(req: HttpServerRequest, split: List<String>, directoryName: String) {
-        val noteFileNameOnly = split[2]
+        val id = split[2]
         val filename = split[4]
 
         handleAuthorization(req) {token ->
             req.isExpectMultipart = true
             req.uploadHandler { upload ->
-                val directory = File("users/${token.userId}/notes/notes/$noteFileNameOnly/${directoryName}")
+                val directory = File("users/${token.userId}/notes/attachments/${id[0]}/${id[1]}/$id/${directoryName}")
                 if (!directory.exists()) {
                     directory.mkdirs()
                 }
@@ -142,10 +149,10 @@ object NotesHandler {
     }
 
     fun downloadFile(req: HttpServerRequest, split: List<String>, directoryName: String) {
-        val noteFileNameOnly = split[2]
+        val id = split[2]
         val filename = split[4]
         handleAuthorization(req) { token ->
-            val filePath = "users/${token.userId}/notes/notes/${noteFileNameOnly}/${directoryName}/${filename}"
+            val filePath = "users/${token.userId}/notes/attachments/${id[0]}/${id[1]}/${id}/${directoryName}/${filename}"
             val file = File(filePath)
             if (!file.exists()) {
                 sendFileNotExists(req)
@@ -156,11 +163,11 @@ object NotesHandler {
     }
 
     fun deleteFile(req: HttpServerRequest, split: List<String>, directoryName: String) {
-        val noteFileNameOnly = split[2]
+        val id = split[2]
         val filename = split[4]
         handleAuthorization(req) { token ->
-            val file = File("users/${token.userId}/notes/notes/$noteFileNameOnly/${directoryName}/$filename")
-            val trash = File("users/${token.userId}/trash/notes/notes/$noteFileNameOnly/${directoryName}")
+            val file = File("users/${token.userId}/notes/attachments/${id[0]}/${id[1]}/${id}/${directoryName}/${filename}")
+            val trash = File("users/${token.userId}/trash/notes/attachments/${id[0]}/${id[1]}/${id}/${directoryName}")
             if (!trash.exists()) {
                 trash.mkdirs()
             }
