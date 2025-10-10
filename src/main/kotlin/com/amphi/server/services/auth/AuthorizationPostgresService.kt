@@ -22,4 +22,8 @@ class AuthorizationPostgresService : AuthorizationService {
     override fun getTokens(): List<Token> {
         TODO("Not yet implemented")
     }
+
+    override fun addToken(token: Token) {
+        TODO("Not yet implemented")
+    }
 }

@@ -146,4 +146,8 @@ class AuthorizationSqliteService : AuthorizationService {
     override fun getTokens(): List<Token> {
         return tokens
     }
+
+    override fun addToken(token: Token) {
+        tokens.add(token)
+    }
 }

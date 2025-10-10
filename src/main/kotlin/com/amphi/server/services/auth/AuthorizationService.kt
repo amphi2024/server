@@ -7,6 +7,6 @@ interface AuthorizationService {
   fun deleteObsoleteTokens()
   fun generatedToken(): String
   fun syncTokensLastAccess()
-
     fun getTokens(): List<Token>
+    fun addToken(token: Token)
 }

@@ -1,6 +1,8 @@
 package com.amphi.server.services.user
 
+import com.amphi.server.authorizationService
 import com.amphi.server.configs.ServerSqliteDatabase.connection
+import com.amphi.server.models.Token
 import de.mkammerer.argon2.Argon2
 import de.mkammerer.argon2.Argon2Factory
 import io.vertx.core.json.JsonArray
@@ -55,8 +57,9 @@ class UserSqliteService : UserService {
       username = resultSet.getString("name")
       val insertQuery = "INSERT INTO tokens (token, last_accessed, user_id, device_name) VALUES (? , ?, ?, ?);"
       val insertStatement = connection.prepareStatement(insertQuery)
+        val timestamp = Instant.now()
       insertStatement.setString(1, token)
-      insertStatement.setLong(2, Instant.now().toEpochMilli())
+      insertStatement.setLong(2, timestamp.toEpochMilli())
       insertStatement.setString(3, id)
       insertStatement.setString(4, deviceName)
       insertStatement.executeUpdate()
@@ -64,6 +67,13 @@ class UserSqliteService : UserService {
       authenticated = argon2.verify(storedHashedPassword, password.toCharArray())
 
       argon2.wipeArray(password.toCharArray())
+
+        authorizationService.addToken(Token(
+            token = token,
+            lastAccessed = timestamp,
+            userId = id,
+            deviceName = deviceName
+        ))
     }
     resultSet.close()
     statement.close()
@@ -82,12 +92,12 @@ class UserSqliteService : UserService {
     val string = stringBuilder.toString()
     var exists = false
 
-//    for(token in tokens) {
-//      if(string == token.token) {
-//        exists = true
-//        break
-//      }
-//    }
+    for(token in authorizationService.getTokens()) {
+      if(string == token.token) {
+        exists = true
+        break
+      }
+    }
     return if(exists) {
       generatedToken()
     } else string
