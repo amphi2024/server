@@ -63,6 +63,27 @@ class NotesDatabase(val userId: String) {
                             );
                         """
                 )
+                statement.executeUpdate(
+                    """
+                            CREATE TABLE IF NOT EXISTS snapshots (
+                                id TEXT PRIMARY KEY NOT NULL, 
+                                note_id TEXT NOT NULL, 
+                                content TEXT, 
+                                created INTEGER NOT NULL,
+                                modified INTEGER NOT NULL,
+                                deleted INTEGER,
+                                is_folder BOOLEAN,
+                                parent_id TEXT,
+                                line_height INTEGER,
+                                text_size INTEGER,
+                                text_color INTEGER,
+                                background_color INTEGER,
+                                background TEXT,
+                                title TEXT,
+                                subtitle TEXT
+                            );
+                        """
+                )
             }
         } catch (e: Exception) {
             println(e.message)
