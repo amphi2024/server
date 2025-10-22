@@ -113,8 +113,8 @@ object NotesHandler {
                 for (file in files) {
                     val jsonObject = JsonObject()
                     jsonObject.put("filename", file.name)
-                    jsonObject.put("modified", file.lastModified()
-                    )
+                    jsonObject.put("modified", file.lastModified())
+                    jsonObject.put("size", file.length())
                     jsonArray.add(jsonObject)
                 }
             }
