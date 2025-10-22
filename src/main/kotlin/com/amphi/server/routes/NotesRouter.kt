@@ -32,7 +32,7 @@ object NotesRouter {
                             "images" -> NotesHandler.uploadFile(req, split, "images")
                             "videos" -> NotesHandler.uploadFile(req, split, "videos")
                             "files" -> NotesHandler.uploadFile(req, split, "files")
-                            "audio" -> NotesHandler.downloadFile(req, split, "audio")
+                            "audio" -> NotesHandler.uploadFile(req, split, "audio")
                             else -> sendBadRequest(req)
                         }
                     }
@@ -42,7 +42,7 @@ object NotesRouter {
                             "images" -> NotesHandler.deleteFile(req, split, "images")
                             "videos" -> NotesHandler.deleteFile(req, split, "videos")
                             "files" -> NotesHandler.deleteFile(req, split, "files")
-                            "audio" -> NotesHandler.downloadFile(req, split, "audio")
+                            "audio" -> NotesHandler.deleteFile(req, split, "audio")
                             else -> sendBadRequest(req)
                         }
                     }
@@ -59,7 +59,7 @@ object NotesRouter {
                             "images" -> NotesHandler.getFiles(req, split, "images")
                             "videos" -> NotesHandler.getFiles(req, split, "videos")
                             "files" -> NotesHandler.getFiles(req, split, "files")
-                            "audio" -> NotesHandler.downloadFile(req, split, "audio")
+                            "audio" -> NotesHandler.getFiles(req, split, "audio")
                             else -> {
                                 if (split[2] == "themes") {
                                     ThemeHandler.downloadTheme(req, "notes", split[3])
