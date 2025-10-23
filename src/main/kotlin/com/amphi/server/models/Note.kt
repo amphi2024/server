@@ -45,46 +45,50 @@ class Note(
             )
         }
 
+        fun legacy(jsonObject: JsonObject, fileExtension: String, oldId: String) : Note {
+            val location = jsonObject.getValue("location") as? String
+            var parentId = location?.split(".folder")?.firstOrNull()
+            if(parentId != null) {
+                parentId = if(parentId.isEmpty()) {
+                    null
+                } else {
+                    "${parentId}legacyfolder"
+                }
+            }
+
+            if(fileExtension == "folder") {
+                return Note(
+                    id = "${oldId}legacyfolder",
+                    title = jsonObject.getString("name"),
+                    content = JsonArray(),
+                    created = jsonObject.getLong("created"),
+                    modified = jsonObject.getLong("modified"),
+                    deleted = jsonObject.getValue("deleted") as? Long,
+                    isFolder = true,
+                    parentId = parentId
+                )
+            }
+            else {
+                return Note(
+                    id = "${oldId}legacynote",
+                    content = jsonObject.getJsonArray("contents"),
+                    created = jsonObject.getLong("created"),
+                    modified = jsonObject.getLong("modified"),
+                    deleted = jsonObject.getValue("deleted") as? Long,
+                    isFolder = false,
+                    backgroundColor = jsonObject.getValue("backgroundColor") as? Long,
+                    textColor = jsonObject.getValue("textColor") as? Long,
+                    textSize = jsonObject.getValue("textSize") as? Int,
+                    lineHeight = jsonObject.getValue("lineHeight") as? Int,
+                    parentId = parentId
+                )
+            }
+        }
+
         fun legacy(file: File) : Note {
             try {
                 val jsonObject = JsonObject(file.readText())
-                val location = jsonObject.getValue("location") as? String
-                var parentId = location?.split(".folder")?.firstOrNull()
-                if(parentId != null) {
-                    parentId = if(parentId.isEmpty()) {
-                        null
-                    } else {
-                        "${parentId}legacyfolder"
-                    }
-                }
-
-                if(file.extension == "folder") {
-                    return Note(
-                        id = "${file.nameWithoutExtension}legacyfolder",
-                        title = jsonObject.getString("name"),
-                        content = JsonArray(),
-                        created = jsonObject.getLong("created"),
-                        modified = jsonObject.getLong("modified"),
-                        deleted = jsonObject.getValue("deleted") as? Long,
-                        isFolder = true,
-                        parentId = parentId
-                    )
-                }
-                else {
-                    return Note(
-                        id = "${file.nameWithoutExtension}legacynote",
-                        content = jsonObject.getJsonArray("contents"),
-                        created = jsonObject.getLong("created"),
-                        modified = jsonObject.getLong("modified"),
-                        deleted = jsonObject.getValue("deleted") as? Long,
-                        isFolder = false,
-                        backgroundColor = jsonObject.getValue("backgroundColor") as? Long,
-                        textColor = jsonObject.getValue("textColor") as? Long,
-                        textSize = jsonObject.getValue("textSize") as? Int,
-                        lineHeight = jsonObject.getValue("lineHeight") as? Int,
-                        parentId = parentId
-                    )
-                }
+                return legacy(jsonObject = jsonObject, fileExtension = file.extension, oldId = file.nameWithoutExtension)
             }
             catch (e: Exception) {
                 println(e)

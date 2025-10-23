@@ -44,6 +44,20 @@ object NotesHandler {
             req.bodyHandler { buffer ->
                 val database = NotesDatabase(token.userId)
                 val jsonObject = buffer.toJsonObject()
+                if(id.endsWith(".note") || id.endsWith(".folder")) {
+                    print(id.split(".").last())
+                    val note = Note.legacy(
+                        oldId = id.split(".").first(),
+                        fileExtension = id.split(".").last(),
+                        jsonObject = jsonObject
+                    )
+                    database.insertNote(note)
+                    eventService.saveEvent(token = token, action = "upload_note", value = id, appType = "notes")
+
+                    sendSuccess(req)
+                    database.close()
+                    return@bodyHandler
+                }
                 val note = Note(
                     id = jsonObject.getString("id"),
                     title = jsonObject.getValue("title") as? String,
