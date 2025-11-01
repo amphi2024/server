@@ -5,10 +5,13 @@ import com.amphi.server.common.sendSuccess
 import com.amphi.server.common.sendUploadFailed
 import com.amphi.server.utils.contentTypeByExtension
 import com.amphi.server.common.handleAuthorization
+import com.amphi.server.common.sendBadRequest
 import com.amphi.server.common.sendNotFound
 import com.amphi.server.eventService
 import com.amphi.server.models.Note
 import com.amphi.server.models.NotesDatabase
+import com.amphi.server.models.NotesTheme
+import com.amphi.server.models.NotesThemeColors
 import com.amphi.server.trashService
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.json.JsonArray
@@ -96,7 +99,6 @@ object NotesHandler {
             database.close()
         }
     }
-
 
     fun deleteNote(req: HttpServerRequest, split: List<String>) {
         val id = split[2]
@@ -196,6 +198,92 @@ object NotesHandler {
             } else {
                 sendFileNotExists(req)
             }
+        }
+    }
+
+    fun getThemes(req: HttpServerRequest) {
+        handleAuthorization(req) { token ->
+
+            val database = NotesDatabase(token.userId)
+            val jsonArray = JsonArray()
+
+            database.getThemes().forEach { theme ->
+                jsonArray.add(theme.toJsonObject())
+            }
+            req.response().putHeader("content-type", "application/json; charset=UTF-8").end(jsonArray.encode())
+
+            database.close()
+        }
+    }
+
+    fun uploadTheme(req: HttpServerRequest, split: List<String>) {
+        val id = split[3]
+        handleAuthorization(req) { token ->
+            req.bodyHandler { buffer ->
+                val database = NotesDatabase(token.userId)
+                val jsonObject = buffer.toJsonObject()
+                if(id.endsWith(".theme")) {
+                    sendBadRequest(req)
+                    return@bodyHandler
+                }
+                val theme = NotesTheme(
+                    id = jsonObject.getString("id"),
+                    title = jsonObject.getString("title"),
+                    modified = jsonObject.getLong("modified"),
+                    created = jsonObject.getLong("created"),
+                    lightColors = NotesThemeColors(
+                        background = jsonObject.getLong("background_light"),
+                        text = jsonObject.getLong("text_light"),
+                        accent = jsonObject.getLong("accent_light"),
+                        card = jsonObject.getLong("card_light"),
+                        floatingButtonBackground = jsonObject.getLong("floating_button_background_light"),
+                        floatingButtonIcon = jsonObject.getLong("floating_button_icon_light")
+                    ),
+                    darkColors = NotesThemeColors(
+                        background = jsonObject.getLong("background_dark"),
+                        text = jsonObject.getLong("text_dark"),
+                        accent = jsonObject.getLong("accent_dark"),
+                        card = jsonObject.getLong("card_dark"),
+                        floatingButtonBackground = jsonObject.getLong("floating_button_background_dark"),
+                        floatingButtonIcon = jsonObject.getLong("floating_button_icon_dark")
+                    )
+                )
+                database.insertTheme(theme)
+                eventService.saveEvent(token = token, action = "upload_theme", value = id, appType = "notes")
+
+                sendSuccess(req)
+                database.close()
+            }
+        }
+    }
+
+    fun downloadTheme(req: HttpServerRequest, split: List<String>) {
+        val id = split[3]
+        handleAuthorization(req) { token ->
+            val database = NotesDatabase(token.userId)
+            val theme = database.getThemeById(id)
+            if (theme == null) {
+                sendNotFound(req)
+            } else {
+                req.response().putHeader("content-type", "application/json; charset=UTF-8").end(theme.toJsonObject().toString())
+            }
+            database.close()
+        }
+    }
+
+    fun deleteTheme(req: HttpServerRequest, split: List<String>) {
+        val id = split[3]
+        handleAuthorization(req) { token ->
+            val database = NotesDatabase(token.userId)
+            database.deleteTheme(id)
+            eventService.saveEvent(
+                token = token,
+                action = "delete_theme",
+                value = id,
+                appType = "notes"
+            )
+            sendSuccess(req)
+            database.close()
         }
     }
 }

@@ -62,7 +62,7 @@ object NotesRouter {
                             "audio" -> NotesHandler.getFiles(req, split, "audio")
                             else -> {
                                 if (split[2] == "themes") {
-                                    ThemeHandler.downloadTheme(req, "notes", split[3])
+                                    NotesHandler.downloadTheme(req, split)
                                 } else {
                                     sendNotFound(req)
                                 }
@@ -72,7 +72,7 @@ object NotesRouter {
 
                     "POST" -> {
                         if (split[2] == "themes") {
-                            ThemeHandler.uploadTheme(req, "notes", split[3])
+                            NotesHandler.uploadTheme(req, split)
                         } else {
                             sendNotFound(req)
                         }
@@ -80,7 +80,7 @@ object NotesRouter {
 
                     "DELETE" -> {
                         if (split[2] == "themes") {
-                            ThemeHandler.deleteTheme(req, "notes", split[3])
+                            NotesHandler.deleteTheme(req, split)
                         } else {
                             sendNotFound(req)
                         }
@@ -96,7 +96,7 @@ object NotesRouter {
                         when (req.path()) {
                             "/notes/colors" -> ThemeHandler.getColors(req, "notes")
                             "/notes/events" -> EventHandler.getEvents(req, "notes")
-                            "/notes/themes" -> ThemeHandler.getThemes(req, "notes")
+                            "/notes/themes" -> NotesHandler.getThemes(req)
                             "/notes/sync" -> websocketHandler.handleWebsocket(req)
                             else -> NotesHandler.downloadNote(req, split)
                         }
