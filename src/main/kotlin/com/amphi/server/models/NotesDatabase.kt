@@ -137,7 +137,7 @@ class NotesDatabase(val userId: String) {
         preparedStatement.close()
     }
 
-    fun insertTheme(id: String, jsonObject: JsonObject) {
+    fun insertLegacyTheme(id: String, jsonObject: JsonObject) {
         val sql = """
                 INSERT INTO themes (
                     id, title, created, modified, background_light, text_light, accent_light,
@@ -146,7 +146,7 @@ class NotesDatabase(val userId: String) {
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
                 """.trimIndent()
         val statement = connection.prepareStatement(sql)
-        statement.setTheme(id, jsonObject)
+        statement.setLegacyTheme(id, jsonObject)
         statement.executeUpdate()
         statement.close()
     }
@@ -215,7 +215,7 @@ fun PreparedStatement.setNote(note: Note) {
     setNullable(14, note.subtitle, Types.VARCHAR)
 }
 
-fun PreparedStatement.setTheme(id: String, jsonObject: JsonObject) {
+fun PreparedStatement.setLegacyTheme(id: String, jsonObject: JsonObject) {
     setString(1, id)
     setString(2, jsonObject.getString("title"))
     setLong(3, jsonObject.getLong("created"))

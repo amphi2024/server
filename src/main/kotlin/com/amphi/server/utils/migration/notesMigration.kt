@@ -1,6 +1,5 @@
 package com.amphi.server.utils.migration
 
-import com.amphi.server.eventService
 import com.amphi.server.models.Note
 import com.amphi.server.models.NotesDatabase
 import com.amphi.server.trashService
@@ -67,7 +66,7 @@ private fun migrateThemes(userDirectory: File, database: NotesDatabase) {
         if (file.isFile && file.extension != "db") {
             try {
                 val jsonObject = JsonObject(file.readText())
-                database.insertTheme(file.nameWithoutExtension, jsonObject)
+                database.insertLegacyTheme(file.nameWithoutExtension, jsonObject)
             }
             catch (e: Exception) {
                 println(e)
