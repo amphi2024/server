@@ -1,8 +1,6 @@
 package com.amphi.server.models
 
-import com.amphi.server.configs.ServerSqliteDatabase
 import com.amphi.server.utils.setNullable
-import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import java.sql.DriverManager
 import java.sql.PreparedStatement
@@ -264,7 +262,7 @@ class NotesDatabase(val userId: String) {
 
     fun deleteTheme(id: String) {
         val sql = "DELETE FROM themes WHERE id = ?;"
-        val preparedStatement = ServerSqliteDatabase.connection.prepareStatement(sql)
+        val preparedStatement = connection.prepareStatement(sql)
         preparedStatement.setString(1, id)
         preparedStatement.executeUpdate()
         preparedStatement.close()
