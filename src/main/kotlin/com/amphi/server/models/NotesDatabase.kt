@@ -152,7 +152,7 @@ class NotesDatabase(val userId: String) {
     }
 
     fun getNotes() : List<Note> {
-        val sql = "SELECT * FROM notes;"
+        val sql = "SELECT * FROM notes WHERE permanently_deleted IS NULL;"
         val list = mutableListOf<Note>()
         val statement = connection.createStatement()
         val resultSet = statement.executeQuery(sql)
