@@ -1,6 +1,7 @@
 package com.amphi.server.utils
 
 import com.amphi.server.models.CloudDatabase
+import com.amphi.server.models.NotesDatabase
 import com.amphi.server.models.TrashLog
 import com.amphi.server.trashService
 import java.io.File
@@ -36,5 +37,13 @@ fun deleteObsoleteCloudFiles(userDirectory: File) {
         val database = CloudDatabase(userDirectory.name)
         database.permanentlyDeleteObsoleteFiles()
         database.close()
+    }
+}
+
+fun deleteObsoleteNotes(userDirectory: File) {
+    val dbFile = File("users/${userDirectory.name}/notes/notes.db")
+    if (dbFile.exists()) {
+        val database = NotesDatabase(userDirectory.name)
+        database.deleteObsoleteNotes()
     }
 }

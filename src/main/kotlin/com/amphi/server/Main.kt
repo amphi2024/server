@@ -22,6 +22,7 @@ import com.amphi.server.routes.PhotosRouter
 import com.amphi.server.utils.RateLimiter
 import com.amphi.server.utils.deleteObsoleteCloudFiles
 import com.amphi.server.utils.deleteObsoleteFilesInTrash
+import com.amphi.server.utils.deleteObsoleteNotes
 import com.amphi.server.utils.migration.migrateNotes
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Handler
@@ -137,6 +138,8 @@ fun main() {
                     deleteObsoleteFilesInTrash(trash, trashLogs)
 
                     migrateNotes(userDirectory)
+
+                    deleteObsoleteNotes(userDirectory)
                 }
             }
         } catch (e: Exception) {

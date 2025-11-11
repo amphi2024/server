@@ -5,6 +5,7 @@ import io.vertx.core.json.JsonObject
 import java.sql.DriverManager
 import java.sql.PreparedStatement
 import java.sql.Types
+import java.time.Duration
 import java.time.Instant
 
 class NotesDatabase(val userId: String) {
@@ -151,12 +152,12 @@ class NotesDatabase(val userId: String) {
         statement.close()
     }
 
-    fun getNotes() : List<Note> {
+    fun getNotes(): List<Note> {
         val sql = "SELECT * FROM notes WHERE permanently_deleted IS NULL;"
         val list = mutableListOf<Note>()
         val statement = connection.createStatement()
         val resultSet = statement.executeQuery(sql)
-        while(resultSet.next()) {
+        while (resultSet.next()) {
             val note = Note.fromResultSet(resultSet)
             list.add(note)
         }
@@ -167,18 +168,17 @@ class NotesDatabase(val userId: String) {
         return list
     }
 
-    fun getNoteById(id: String) : Note? {
+    fun getNoteById(id: String): Note? {
         val sql = "SELECT * FROM notes WHERE id = ?;"
         val statement = connection.prepareStatement(sql)
         statement.setString(1, id)
         val resultSet = statement.executeQuery()
-        if(resultSet.next()) {
+        if (resultSet.next()) {
             val note = Note.fromResultSet(resultSet)
             resultSet.close()
             statement.close()
             return note
-        }
-        else {
+        } else {
             resultSet.close()
             statement.close()
             return null
@@ -197,12 +197,12 @@ class NotesDatabase(val userId: String) {
         preparedStatement.close()
     }
 
-    fun getThemes() : List<NotesTheme> {
+    fun getThemes(): List<NotesTheme> {
         val sql = "SELECT * FROM themes;"
         val list = mutableListOf<NotesTheme>()
         val statement = connection.createStatement()
         val resultSet = statement.executeQuery(sql)
-        while(resultSet.next()) {
+        while (resultSet.next()) {
             list.add(NotesTheme.fromResultSet(resultSet))
         }
 
@@ -242,18 +242,17 @@ class NotesDatabase(val userId: String) {
         statement.close()
     }
 
-    fun getThemeById(id: String) : NotesTheme? {
+    fun getThemeById(id: String): NotesTheme? {
         val sql = "SELECT * FROM themes WHERE id = ?;"
         val statement = connection.prepareStatement(sql)
         statement.setString(1, id)
         val resultSet = statement.executeQuery()
-        if(resultSet.next()) {
+        if (resultSet.next()) {
             val theme = NotesTheme.fromResultSet(resultSet)
             resultSet.close()
             statement.close()
             return theme
-        }
-        else {
+        } else {
             resultSet.close()
             statement.close()
             return null
@@ -267,11 +266,25 @@ class NotesDatabase(val userId: String) {
         preparedStatement.executeUpdate()
         preparedStatement.close()
     }
+
+    fun deleteObsoleteNotes() {
+        val threshold = Instant.now().minus(Duration.ofDays(30)).toEpochMilli()
+        val sql = """
+        DELETE FROM notes
+        WHERE permanently_deleted IS NOT NULL
+          AND permanently_deleted < ?
+        """.trimIndent()
+
+        connection.prepareStatement(sql).use { stmt ->
+            stmt.setLong(1, threshold)
+            stmt.executeUpdate()
+        }
+    }
 }
 
 fun PreparedStatement.setNote(note: Note) {
     setString(1, note.id)
-    setNullable(2, if(note.isFolder) null else note.content.toString(), Types.VARCHAR)
+    setNullable(2, if (note.isFolder) null else note.content.toString(), Types.VARCHAR)
     setLong(3, note.created)
     setLong(4, note.modified)
     setNullable(5, note.deleted, Types.INTEGER)
@@ -290,7 +303,7 @@ fun PreparedStatement.setTheme(theme: NotesTheme) {
     setString(1, theme.id)
     setString(2, theme.title)
     setLong(3, theme.created)
-    setLong(4,theme.modified)
+    setLong(4, theme.modified)
     setLong(5, theme.lightColors.background)
     setLong(6, theme.lightColors.text)
     setLong(7, theme.lightColors.accent)
@@ -298,7 +311,7 @@ fun PreparedStatement.setTheme(theme: NotesTheme) {
     setLong(9, theme.lightColors.floatingButtonBackground)
     setLong(10, theme.lightColors.floatingButtonIcon)
     setLong(11, theme.darkColors.background)
-    setLong(12,theme.darkColors.text)
+    setLong(12, theme.darkColors.text)
     setLong(13, theme.darkColors.accent)
     setLong(14, theme.darkColors.card)
     setLong(15, theme.darkColors.floatingButtonBackground)
@@ -309,7 +322,7 @@ fun PreparedStatement.setLegacyTheme(id: String, jsonObject: JsonObject) {
     setString(1, id)
     setString(2, jsonObject.getString("title"))
     setLong(3, jsonObject.getLong("created"))
-    setLong(4,jsonObject.getLong("modified"))
+    setLong(4, jsonObject.getLong("modified"))
     setLong(5, jsonObject.getLong("lightBackgroundColor"))
     setLong(6, jsonObject.getLong("lightTextColor"))
     setLong(7, jsonObject.getLong("lightAccentColor"))
