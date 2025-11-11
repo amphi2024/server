@@ -31,7 +31,7 @@ import java.io.File
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-const val VERSION = "1.4.1"
+const val VERSION = "2.0.0"
 
 val authorizationService = if (ServerSettings.databaseType == SQLITE) AuthorizationSqliteService() else AuthorizationPostgresService()
 val eventService = if (ServerSettings.databaseType == SQLITE) EventSqliteService() else EventPostgresService()
@@ -68,7 +68,7 @@ class App : AbstractVerticle(), Handler<HttpServerRequest> {
         vertx.createHttpServer().requestHandler{req ->
 
             val ipAddress = req.remoteAddress().hostAddress()
-            //println("request - ip: $ipAddress, ${req.path()} ${req.method().name()}")
+//            println("request - ip: $ipAddress, ${req.path()} ${req.method().name()}")
             if(RateLimiter.isAllowed(ipAddress)) {
                 if(ServerSettings.whitelistOnly) {
                     if(ServerSettings.inWhiteList(ipAddress)) {
