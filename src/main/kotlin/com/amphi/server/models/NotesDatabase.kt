@@ -116,8 +116,8 @@ class NotesDatabase(val userId: String) {
                 INSERT INTO notes (
                     id, content, created, modified, deleted, is_folder, parent_id,
                     line_height, text_size, text_color, background_color, background,
-                    title, subtitle
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    title, subtitle, permanently_deleted
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                        ON CONFLICT(id) DO UPDATE SET
                   content = excluded.content,
                   modified = excluded.modified,
@@ -130,7 +130,8 @@ class NotesDatabase(val userId: String) {
                   background_color = excluded.background_color,
                   background = excluded.background,
                   title = excluded.title,
-                  subtitle = excluded.subtitle;
+                  subtitle = excluded.subtitle,
+                  permanently_deleted = excluded.permanently_deleted;
                 """.trimIndent()
         val preparedStatement = connection.prepareStatement(sql)
         preparedStatement.setNote(note)
@@ -297,6 +298,7 @@ fun PreparedStatement.setNote(note: Note) {
     setNullable(12, note.background, Types.VARCHAR)
     setNullable(13, note.title, Types.VARCHAR)
     setNullable(14, note.subtitle, Types.VARCHAR)
+    setNull(15, Types.INTEGER)
 }
 
 fun PreparedStatement.setTheme(theme: NotesTheme) {
