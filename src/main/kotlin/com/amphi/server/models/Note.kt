@@ -1,5 +1,6 @@
 package com.amphi.server.models
 
+import com.amphi.server.utils.moveToTrash
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import java.io.File
@@ -102,22 +103,18 @@ class Note(
         }
     }
 
-    fun deleteObsoleteMediaFiles(files: MutableList<File>?, mediaContents: MutableList<NoteContent>) {
-        if (files != null) {
-            val imageIterator = files.listIterator()
-            while (imageIterator.hasNext()) {
-                val imageFile = imageIterator.next()
-                val mediaIterator = mediaContents.listIterator()
-                while (mediaIterator.hasNext()) {
-                    if (mediaIterator.next().value == imageFile.name) {
-                        mediaIterator.remove()
-                        imageIterator.remove()
-                        break
-                    }
+    fun deleteObsoleteMediaFiles(filePaths: Set<String>, directory: File, userId: String) {
+        if(directory.exists()) {
+            directory.list()?.let { list ->
+                val obsoleteFilePaths = list subtract filePaths
+                obsoleteFilePaths.forEach { path ->
+                    val file = File(path)
+                    moveToTrash(
+                        userId = userId,
+                        path = "notes/attachments/${id[0]}/${id[1]}/$id/${directory.name}",
+                        filename = file.name
+                    )
                 }
-            }
-            files.forEach { file ->
-                file.delete()
             }
         }
     }

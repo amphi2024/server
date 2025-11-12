@@ -17,12 +17,13 @@ import com.amphi.server.services.trash.TrashSqliteService
 import com.amphi.server.common.sendNotFound
 import com.amphi.server.configs.ServerPostgresDatabase
 import com.amphi.server.configs.ServerSqliteDatabase
+import com.amphi.server.models.NotesDatabase
 import com.amphi.server.routes.CloudRouter
 import com.amphi.server.routes.PhotosRouter
 import com.amphi.server.utils.RateLimiter
 import com.amphi.server.utils.deleteObsoleteCloudFiles
 import com.amphi.server.utils.deleteObsoleteFilesInTrash
-import com.amphi.server.utils.deleteObsoleteNotes
+import com.amphi.server.utils.deleteObsoleteAttachments
 import com.amphi.server.utils.migration.migrateNotes
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Handler
@@ -139,7 +140,13 @@ fun main() {
 
                     migrateNotes(userDirectory)
 
-                    deleteObsoleteNotes(userDirectory)
+                    val notesDBFile = File("users/${userDirectory.name}/notes/notes.db")
+                    if (notesDBFile.exists()) {
+                        val database = NotesDatabase(userDirectory.name)
+                        database.deleteObsoleteNotes()
+                        val notes = database.getNotes()
+                        deleteObsoleteAttachments(notes, userDirectory.name)
+                    }
                 }
             }
         } catch (e: Exception) {
