@@ -1,5 +1,6 @@
 package com.amphi
 
+import com.amphi.server.trashService
 import com.amphi.server.utils.migration.migrateMusic
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
@@ -34,6 +35,11 @@ class MusicMigrationTest {
 
         } finally {
             userDir.deleteRecursively()
+            trashService.getTrashLogs().forEach { trashLog ->
+                if(trashLog.path.startsWith("users/user1")) {
+                    trashService.deleteTrashLog(trashLog.path)
+                }
+            }
         }
     }
 
