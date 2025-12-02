@@ -26,6 +26,7 @@ import com.amphi.server.utils.deleteObsoleteFilesInTrash
 import com.amphi.server.utils.deleteObsoleteAttachments
 import com.amphi.server.utils.migration.migrateMusic
 import com.amphi.server.utils.migration.migrateNotes
+import com.amphi.server.utils.migration.migratePhotos
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Handler
 import io.vertx.core.Vertx
@@ -141,6 +142,7 @@ fun main() {
 
                     migrateNotes(userDirectory)
                     migrateMusic(userDirectory)
+                    migratePhotos(userDirectory)
 
                     val notesDBFile = File("users/${userDirectory.name}/notes/notes.db")
                     if (notesDBFile.exists()) {
