@@ -1,4 +1,4 @@
-package com.amphi.server.models
+package com.amphi.server.models.notes
 
 import io.vertx.core.json.JsonObject
 import java.sql.ResultSet

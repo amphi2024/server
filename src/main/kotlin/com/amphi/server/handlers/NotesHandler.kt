@@ -8,10 +8,10 @@ import com.amphi.server.common.handleAuthorization
 import com.amphi.server.common.sendBadRequest
 import com.amphi.server.common.sendNotFound
 import com.amphi.server.eventService
-import com.amphi.server.models.Note
-import com.amphi.server.models.NotesDatabase
-import com.amphi.server.models.NotesTheme
-import com.amphi.server.models.NotesThemeColors
+import com.amphi.server.models.notes.Note
+import com.amphi.server.models.notes.NotesDatabase
+import com.amphi.server.models.notes.NotesTheme
+import com.amphi.server.models.notes.NotesThemeColors
 import com.amphi.server.trashService
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.json.JsonArray

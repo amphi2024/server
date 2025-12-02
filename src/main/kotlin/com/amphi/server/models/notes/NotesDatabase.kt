@@ -1,4 +1,4 @@
-package com.amphi.server.models
+package com.amphi.server.models.notes
 
 import com.amphi.server.utils.setNullable
 import io.vertx.core.json.JsonObject

@@ -1,5 +1,6 @@
-package com.amphi.server.models
+package com.amphi.server.models.cloud
 
+import com.amphi.server.models.FileModel
 import java.sql.DriverManager
 import java.sql.ResultSet
 import java.time.Instant

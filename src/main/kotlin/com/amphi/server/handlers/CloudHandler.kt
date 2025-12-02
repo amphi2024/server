@@ -9,7 +9,7 @@ import com.amphi.server.common.sendNotFound
 import com.amphi.server.common.sendSuccess
 import com.amphi.server.common.sendUploadFailed
 import com.amphi.server.configs.ServerSettings
-import com.amphi.server.models.CloudDatabase
+import com.amphi.server.models.cloud.CloudDatabase
 import com.amphi.server.models.FileModel
 import com.amphi.server.trashService
 import com.amphi.server.utils.contentTypeByExtension

@@ -1,13 +1,10 @@
 package com.amphi.server.utils
 
-import com.amphi.server.models.CloudDatabase
-import com.amphi.server.models.Note
+import com.amphi.server.models.cloud.CloudDatabase
+import com.amphi.server.models.notes.Note
 import com.amphi.server.models.TrashLog
 import com.amphi.server.trashService
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.nio.file.StandardCopyOption
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneId

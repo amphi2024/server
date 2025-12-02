@@ -1,7 +1,7 @@
 package com.amphi.server.utils.migration
 
-import com.amphi.server.models.Note
-import com.amphi.server.models.NotesDatabase
+import com.amphi.server.models.notes.Note
+import com.amphi.server.models.notes.NotesDatabase
 import com.amphi.server.trashService
 import io.vertx.core.json.JsonObject
 import java.io.File
