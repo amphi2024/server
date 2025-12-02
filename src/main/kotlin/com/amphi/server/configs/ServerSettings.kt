@@ -11,7 +11,6 @@ object ServerSettings {
     var whitelistOnly = false
     var rateLimitIntervalMinutes = 10
     var rateLimitMaxRequests = 45000
-    var autoUpdate = true
     var multiResVideo = false
     var generateMediaThumbnail = true
     var databaseType = SQLITE
@@ -52,9 +51,6 @@ object ServerSettings {
                         "rate-limit-max-requests" -> {
                             rateLimitMaxRequests = Integer.parseInt(second)
                         }
-                        "auto-update" -> {
-                            autoUpdate = second.toBoolean()
-                        }
                         "multi-res-video" -> {
                             multiResVideo = second.toBoolean()
                         }
@@ -87,7 +83,6 @@ object ServerSettings {
         stringBuilder.appendLine("whitelist-only:$whitelistOnly")
         stringBuilder.appendLine("rate-limit-interval-minutes:$rateLimitIntervalMinutes")
         stringBuilder.appendLine("rate-limit-max-requests:$rateLimitMaxRequests")
-        stringBuilder.appendLine("auto-update:$autoUpdate")
         stringBuilder.appendLine("multi-res-video:$multiResVideo")
         stringBuilder.append("generate-media-thumbnail:$generateMediaThumbnail")
         file.writeText(stringBuilder.toString())
