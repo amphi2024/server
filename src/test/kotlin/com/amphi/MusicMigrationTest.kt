@@ -10,7 +10,7 @@ import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.random.Random
 
-class MigrationTest {
+class MusicMigrationTest {
 
     @Test
     fun `should migrate music correctly in version 3_0_0`() {
