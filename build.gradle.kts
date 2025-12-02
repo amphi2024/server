@@ -48,3 +48,7 @@ tasks.jar {
     }
     archiveFileName.set("server.jar")
 }
+
+tasks.test {
+    useJUnitPlatform()
+}
