@@ -7,6 +7,7 @@ import com.amphi.server.handlers.ThemeHandler
 import com.amphi.server.handlers.WebsocketHandler
 import io.vertx.core.http.HttpServerRequest
 
+//TODO: implement theme handling
 object CloudRouter {
 
     private val websocketHandler = WebsocketHandler()
@@ -40,6 +41,7 @@ object CloudRouter {
                     "GET" -> {
                         when(split[2]) {
                             "files" -> CloudHandler.downloadFileInfo(req, split)
+//                            "themes" -> CloudHandler.downloadTheme(req, split)
                             else -> sendNotFound(req)
                         }
                     }
@@ -47,6 +49,7 @@ object CloudRouter {
                     "PATCH" -> {
                         when(split[2]) {
                             "files" -> CloudHandler.updateFileInfo(req, split)
+//                            "themes" -> CloudHandler.uploadTheme(req, split)
                             else -> sendNotFound(req)
                         }
                     }
@@ -54,6 +57,7 @@ object CloudRouter {
                     "DELETE" -> {
                         when(split[2]) {
                             "files" -> CloudHandler.deleteFile(req, split)
+//                            "themes" -> CloudHandler.deleteTheme(req, split)
                             else -> sendNotFound(req)
                         }
                     }
@@ -71,7 +75,7 @@ object CloudRouter {
                             when (req.path()) {
                                 "/cloud/colors" -> ThemeHandler.getColors(req, "cloud")
                                 "/cloud/events" -> EventHandler.getEvents(req, "cloud")
-                                "/cloud/themes" -> ThemeHandler.getThemes(req, "cloud")
+//                                "/cloud/themes" -> CloudHandler.getThemes(req)
                                 "/cloud/sync" -> websocketHandler.handleWebsocket(req)
                                 else -> sendNotFound(req)
                             }
