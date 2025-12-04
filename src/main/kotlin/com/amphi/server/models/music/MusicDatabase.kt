@@ -40,7 +40,6 @@ class MusicDatabase(val userId: String) {
                                 disc_number INTEGER,
                                 description TEXT,
                                 files TEXT NOT NULL,
-                                visibility TEXT,
                                 featured_artist_ids TEXT
                               );
                         """
@@ -258,12 +257,12 @@ class MusicDatabase(val userId: String) {
                         id, title, genres, artist_ids, album_id, added, modified,
                         deleted, composer_ids, lyricist_ids, arranger_ids,
                         producer_ids, archived, released, track_number, disc_number,
-                        description, files, visibility, featured_artist_ids
+                        description, files, featured_artist_ids
                     ) VALUES (
                         ?, ?, ?, ?, ?, ?, ?,
                         ?, ?, ?, ?,
                         ?, ?, ?, ?, ?,
-                        ?, ?, ?, ?
+                        ?, ?, ?
                     )
                     ON CONFLICT(id) DO UPDATE SET
                         title = excluded.title,
@@ -283,7 +282,6 @@ class MusicDatabase(val userId: String) {
                         disc_number = excluded.disc_number,
                         description = excluded.description,
                         files = excluded.files,
-                        visibility = excluded.visibility,
                         featured_artist_ids = excluded.featured_artist_ids,
                         permanently_deleted = NULL;
                     """.trimIndent()
@@ -313,8 +311,7 @@ class MusicDatabase(val userId: String) {
         setObject(16, song.discNumber)
         setString(17, song.description)
         setString(18, song.files.toString())
-        setString(19, null)
-        setNullable(20, song.featuredArtistIds?.toString(), Types.VARCHAR)
+        setNullable(19, song.featuredArtistIds?.toString(), Types.VARCHAR)
     }
 
     fun insertArtist(artist: Artist, onComplete: ((result: Int) -> Unit)? = null) {
