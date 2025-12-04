@@ -70,4 +70,21 @@ class Photo(
             }
         }
     }
+
+    fun toJsonObject(): JsonObject {
+        val jsonObject = JsonObject()
+
+        jsonObject.put("id", id)
+        jsonObject.put("title", title)
+        jsonObject.put("created", created)
+        jsonObject.put("modified", modified)
+        jsonObject.put("date", date)
+        jsonObject.put("deleted", deleted)
+        jsonObject.put("mime_type", mimeType)
+        jsonObject.put("sha256", sha256)
+        jsonObject.put("note", note)
+        jsonObject.put("tags", tags)
+
+        return jsonObject
+    }
 }

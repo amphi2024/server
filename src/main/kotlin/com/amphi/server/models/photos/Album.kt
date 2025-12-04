@@ -64,4 +64,18 @@ class Album(
             }
         }
     }
+
+    fun toJsonObject(): JsonObject {
+        val jsonObject = JsonObject()
+        jsonObject.put("id", id)
+        jsonObject.put("title", title)
+        jsonObject.put("created", created)
+        jsonObject.put("modified", modified)
+        jsonObject.put("deleted", deleted)
+        jsonObject.put("photos", photos)
+        jsonObject.put("cover_photo_index", coverPhotoIndex)
+        jsonObject.put("note", note)
+
+        return jsonObject
+    }
 }
