@@ -11,16 +11,13 @@ import com.amphi.server.common.sendUploadFailed
 import com.amphi.server.configs.ServerSettings
 import com.amphi.server.models.cloud.CloudDatabase
 import com.amphi.server.models.FileModel
-import com.amphi.server.trashService
 import com.amphi.server.utils.contentTypeByExtension
 import com.amphi.server.utils.generateThumbnail
 import com.amphi.server.utils.getFileExtension
+import com.amphi.server.utils.moveToTrash
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.json.JsonArray
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.nio.file.StandardCopyOption
 
 object CloudHandler {
 
@@ -185,21 +182,18 @@ object CloudHandler {
 
             database.close()
 
-            val file = fileDirectoryById(token.userId, id)
-            val trash = File("users/${token.userId}/trash/cloud/files")
-            if (!trash.exists()) {
-                trash.mkdirs()
-            }
-            if (file.exists()) {
-                Files.move(
-                    file.toPath(),
-                    Paths.get("${trash.path}/${id}"),
-                    StandardCopyOption.REPLACE_EXISTING
-                )
-                trashService.notifyFileDelete("${trash.path}/${id}")
-                req.response().end(Messages.SUCCESS)
+            val directory = fileDirectoryById(token.userId, id)
+            if (directory.exists()) {
+                directory.listFiles()?.forEach { file ->
+                    moveToTrash(
+                        userId = token.userId,
+                        path = "cloud/files/${id[0]}/${id[1]}/${id[2]}/$id",
+                        filename = file.name
+                    )
+                }
+                sendSuccess(req)
             } else {
-                req.response().setStatusCode(404).end(Messages.FILE_NOT_EXISTS)
+                sendFileNotExists(req)
             }
 
         }

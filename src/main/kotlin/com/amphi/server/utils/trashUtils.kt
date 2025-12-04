@@ -6,7 +6,6 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 
-// TODO: refactor other methods to use this function
 fun moveToTrash(userId: String, path: String, filename: String) {
     val trashDir = File("users/${userId}/trash/${path}")
     if(!trashDir.exists()) {

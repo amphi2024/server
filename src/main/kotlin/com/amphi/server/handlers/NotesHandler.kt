@@ -13,6 +13,7 @@ import com.amphi.server.models.notes.NotesDatabase
 import com.amphi.server.models.notes.NotesTheme
 import com.amphi.server.models.notes.NotesThemeColors
 import com.amphi.server.trashService
+import com.amphi.server.utils.moveToTrash
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
@@ -183,17 +184,12 @@ object NotesHandler {
         val filename = split[4]
         handleAuthorization(req) { token ->
             val file = File("users/${token.userId}/notes/attachments/${id[0]}/${id[1]}/${id}/${directoryName}/${filename}")
-            val trash = File("users/${token.userId}/trash/notes/attachments/${id[0]}/${id[1]}/${id}/${directoryName}")
-            if (!trash.exists()) {
-                trash.mkdirs()
-            }
             if (file.exists()) {
-                Files.move(
-                    file.toPath(),
-                    Paths.get("${trash.path}/${filename}"),
-                    StandardCopyOption.REPLACE_EXISTING
+                moveToTrash(
+                    userId = token.userId,
+                    path = "notes/attachments/${id[0]}/${id[1]}/${id}/${directoryName}",
+                    filename = filename
                 )
-                trashService.notifyFileDelete("${trash.path}/${filename}")
                 sendSuccess(req)
             } else {
                 sendFileNotExists(req)
