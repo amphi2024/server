@@ -221,86 +221,86 @@ class PhotosDatabase(val userId: String) {
         setNullable(8, album.note, Types.VARCHAR)
     }
 
-//    fun getThemes(): List<PhotosTheme> {
-//        val sql = "SELECT * FROM themes;"
-//        val list = mutableListOf<PhotosTheme>()
-//        val statement = connection.createStatement()
-//        val resultSet = statement.executeQuery(sql)
-//        while (resultSet.next()) {
-//            list.add(PhotosTheme.fromResultSet(resultSet))
-//        }
-//
-//        resultSet.close()
-//        statement.close()
-//
-//        return list
-//    }
-//
-//    fun insertTheme(theme: PhotosTheme) {
-//        val sql = """
-//                INSERT INTO themes (
-//                    id, title, created, modified, background_light, text_light, accent_light,
-//                    card_light, background_dark, text_dark,
-//                    accent_dark, card_dark
-//                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-//                    ON CONFLICT(id) DO UPDATE SET
-//                  title = excluded.title,
-//                  created = excluded.created,
-//                  modified = excluded.modified,
-//                  background_light = excluded.background_light,
-//                  text_light = excluded.text_light,
-//                  accent_light = excluded.accent_light,
-//                  card_light = excluded.card_light,
-//                  background_dark = excluded.background_dark,
-//                  text_dark = excluded.text_dark,
-//                  accent_dark = excluded.accent_dark,
-//                  card_dark = excluded.card_dark;
-//                """.trimIndent()
-//        val statement = connection.prepareStatement(sql)
-//        statement.setTheme(theme)
-//        statement.executeUpdate()
-//        statement.close()
-//    }
-//
-//    private fun PreparedStatement.setTheme(theme: PhotosTheme) {
-//        setString(1, theme.id)
-//        setString(2, theme.title)
-//        setLong(3, theme.created)
-//        setLong(4, theme.modified)
-//        setLong(5, theme.lightColors.background)
-//        setLong(6, theme.lightColors.text)
-//        setLong(7, theme.lightColors.accent)
-//        setLong(8, theme.lightColors.card)
-//        setLong(9, theme.darkColors.background)
-//        setLong(10, theme.darkColors.text)
-//        setLong(11, theme.darkColors.accent)
-//        setLong(12, theme.darkColors.card)
-//    }
-//
-//    fun getThemeById(id: String): PhotosTheme? {
-//        val sql = "SELECT * FROM themes WHERE id = ?;"
-//        val statement = connection.prepareStatement(sql)
-//        statement.setString(1, id)
-//        val resultSet = statement.executeQuery()
-//        if (resultSet.next()) {
-//            val theme = PhotosTheme.fromResultSet(resultSet)
-//            resultSet.close()
-//            statement.close()
-//            return theme
-//        } else {
-//            resultSet.close()
-//            statement.close()
-//            return null
-//        }
-//    }
-//
-//    fun deleteTheme(id: String) {
-//        val sql = "DELETE FROM themes WHERE id = ?;"
-//        val preparedStatement = connection.prepareStatement(sql)
-//        preparedStatement.setString(1, id)
-//        preparedStatement.executeUpdate()
-//        preparedStatement.close()
-//    }
+    fun getThemes(): List<PhotosTheme> {
+        val sql = "SELECT * FROM themes;"
+        val list = mutableListOf<PhotosTheme>()
+        val statement = connection.createStatement()
+        val resultSet = statement.executeQuery(sql)
+        while (resultSet.next()) {
+            list.add(PhotosTheme.fromResultSet(resultSet))
+        }
+
+        resultSet.close()
+        statement.close()
+
+        return list
+    }
+
+    fun insertTheme(theme: PhotosTheme) {
+        val sql = """
+                INSERT INTO themes (
+                    id, title, created, modified, background_light, text_light, accent_light,
+                    card_light, background_dark, text_dark,
+                    accent_dark, card_dark
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(id) DO UPDATE SET
+                  title = excluded.title,
+                  created = excluded.created,
+                  modified = excluded.modified,
+                  background_light = excluded.background_light,
+                  text_light = excluded.text_light,
+                  accent_light = excluded.accent_light,
+                  card_light = excluded.card_light,
+                  background_dark = excluded.background_dark,
+                  text_dark = excluded.text_dark,
+                  accent_dark = excluded.accent_dark,
+                  card_dark = excluded.card_dark;
+                """.trimIndent()
+        val statement = connection.prepareStatement(sql)
+        statement.setTheme(theme)
+        statement.executeUpdate()
+        statement.close()
+    }
+
+    private fun PreparedStatement.setTheme(theme: PhotosTheme) {
+        setString(1, theme.id)
+        setString(2, theme.title)
+        setLong(3, theme.created)
+        setLong(4, theme.modified)
+        setLong(5, theme.lightColors.background)
+        setLong(6, theme.lightColors.text)
+        setLong(7, theme.lightColors.accent)
+        setLong(8, theme.lightColors.card)
+        setLong(9, theme.darkColors.background)
+        setLong(10, theme.darkColors.text)
+        setLong(11, theme.darkColors.accent)
+        setLong(12, theme.darkColors.card)
+    }
+
+    fun getThemeById(id: String): PhotosTheme? {
+        val sql = "SELECT * FROM themes WHERE id = ?;"
+        val statement = connection.prepareStatement(sql)
+        statement.setString(1, id)
+        val resultSet = statement.executeQuery()
+        if (resultSet.next()) {
+            val theme = PhotosTheme.fromResultSet(resultSet)
+            resultSet.close()
+            statement.close()
+            return theme
+        } else {
+            resultSet.close()
+            statement.close()
+            return null
+        }
+    }
+
+    fun deleteTheme(id: String) {
+        val sql = "DELETE FROM themes WHERE id = ?;"
+        val preparedStatement = connection.prepareStatement(sql)
+        preparedStatement.setString(1, id)
+        preparedStatement.executeUpdate()
+        preparedStatement.close()
+    }
 
     fun setPhotoDeleted(id: String) = setItemDeleted("photos", id)
     fun setAlbumDeleted(id: String) = setItemDeleted("albums", id)
