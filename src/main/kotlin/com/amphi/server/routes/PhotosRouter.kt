@@ -20,6 +20,7 @@ object PhotosRouter {
                     "GET" -> {
                         when (split[2]) {
                             "albums" -> PhotosHandler.downloadAlbum(req, split)
+                            "themes" -> PhotosHandler.downloadTheme(req, split)
                             else -> {
                                 if(split[3] == "info") {
                                     PhotosHandler.downloadPhotoInfo(req, split)
@@ -39,6 +40,7 @@ object PhotosRouter {
                     "POST" -> {
                         when (split[2]) {
                             "albums" -> PhotosHandler.uploadAlbum(req, split)
+                            "themes" -> PhotosHandler.uploadTheme(req, split)
                             else -> {
                                 if(split[3] == "info") {
                                     PhotosHandler.uploadPhotoInfo(req, split)
@@ -52,6 +54,7 @@ object PhotosRouter {
                     "DELETE" -> {
                         when (split[2]) {
                             "albums" -> PhotosHandler.deleteAlbum(req, split)
+                            "themes" -> PhotosHandler.deleteTheme(req, split)
                             else -> sendBadRequest(req)
                         }
                     }
@@ -65,7 +68,7 @@ object PhotosRouter {
                             "/photos/albums" -> PhotosHandler.getAlbums(req)
                             "/photos/colors" -> ThemeHandler.getColors(req, "photos")
                             "/photos/events" -> EventHandler.getEvents(req, "photos")
-                            "/photos/themes" -> ThemeHandler.getThemes(req, "photos")
+                            "/photos/themes" -> PhotosHandler.getThemes(req)
                             "/photos/sync" -> websocketHandler.handleWebsocket(req)
                             else -> PhotosHandler.downloadPhoto(req, split)
                         }
