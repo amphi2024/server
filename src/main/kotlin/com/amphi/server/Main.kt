@@ -19,6 +19,7 @@ import com.amphi.server.configs.ServerPostgresDatabase
 import com.amphi.server.configs.ServerSqliteDatabase
 import com.amphi.server.models.music.MusicDatabase
 import com.amphi.server.models.notes.NotesDatabase
+import com.amphi.server.models.photos.PhotosDatabase
 import com.amphi.server.routes.CloudRouter
 import com.amphi.server.routes.PhotosRouter
 import com.amphi.server.utils.RateLimiter
@@ -159,6 +160,13 @@ fun main() {
                     val musicDBFile = File("users/$userId/music/music.db")
                     if(musicDBFile.exists()) {
                         val database = MusicDatabase(userId)
+                        database.deleteObsoleteItems()
+                        database.close()
+                    }
+
+                    val photosDBFile = File("users/$userId/photos/photos.db")
+                    if(photosDBFile.exists()) {
+                        val database = PhotosDatabase(userId)
                         database.deleteObsoleteItems()
                         database.close()
                     }
