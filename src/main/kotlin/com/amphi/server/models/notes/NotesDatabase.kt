@@ -131,7 +131,8 @@ class NotesDatabase(val userId: String) {
                   background = excluded.background,
                   title = excluded.title,
                   subtitle = excluded.subtitle,
-                  permanently_deleted = excluded.permanently_deleted;
+                  permanently_deleted = excluded.permanently_deleted,
+                  permanently_deleted = NULL;
                 """.trimIndent()
         val preparedStatement = connection.prepareStatement(sql)
         preparedStatement.setNote(note)

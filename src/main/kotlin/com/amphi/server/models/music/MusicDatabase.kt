@@ -284,7 +284,8 @@ class MusicDatabase(val userId: String) {
                         description = excluded.description,
                         files = excluded.files,
                         visibility = excluded.visibility,
-                        featured_artist_ids = excluded.featured_artist_ids;
+                        featured_artist_ids = excluded.featured_artist_ids,
+                        permanently_deleted = NULL;
                     """.trimIndent()
         val preparedStatement = connection.prepareStatement(sql)
         preparedStatement.setSong(song)
@@ -334,7 +335,8 @@ class MusicDatabase(val userId: String) {
                         deleted = excluded.deleted,
                         debut = excluded.debut,
                         country = excluded.country,
-                        description = excluded.description;
+                        description = excluded.description,
+                        permanently_deleted = NULL;
                     """.trimIndent()
         val preparedStatement = connection.prepareStatement(sql)
         preparedStatement.setArtist(artist)
@@ -374,7 +376,8 @@ class MusicDatabase(val userId: String) {
                         modified = excluded.modified,
                         deleted = excluded.deleted,
                         released = excluded.released,
-                        description = excluded.description;
+                        description = excluded.description,
+                        permanently_deleted = NULL;
                     """.trimIndent()
         val preparedStatement = connection.prepareStatement(sql)
         preparedStatement.setAlbum(album)
@@ -413,7 +416,8 @@ class MusicDatabase(val userId: String) {
                         modified = excluded.modified,
                         deleted = excluded.deleted,
                         thumbnails = excluded.thumbnails,
-                        note = excluded.note;
+                        note = excluded.note,
+                        permanently_deleted = NULL;
                     """.trimIndent()
         val preparedStatement = connection.prepareStatement(sql)
         preparedStatement.setPlaylist(playlist)
