@@ -17,6 +17,7 @@ import com.amphi.server.services.trash.TrashSqliteService
 import com.amphi.server.common.sendNotFound
 import com.amphi.server.configs.ServerPostgresDatabase
 import com.amphi.server.configs.ServerSqliteDatabase
+import com.amphi.server.models.music.MusicDatabase
 import com.amphi.server.models.notes.NotesDatabase
 import com.amphi.server.routes.CloudRouter
 import com.amphi.server.routes.PhotosRouter
@@ -137,20 +138,24 @@ fun main() {
 
                     deleteObsoleteCloudFiles(userDirectory)
 
-                    val trash = File("users/${userDirectory.name}/trash")
+                    val userId = userDirectory.name
+
+                    val trash = File("users/$userId/trash")
                     deleteObsoleteFilesInTrash(trash, trashLogs)
 
                     migrateNotes(userDirectory)
                     migrateMusic(userDirectory)
                     migratePhotos(userDirectory)
 
-                    val notesDBFile = File("users/${userDirectory.name}/notes/notes.db")
+                    val notesDBFile = File("users/$userId/notes/notes.db")
                     if (notesDBFile.exists()) {
-                        val database = NotesDatabase(userDirectory.name)
+                        val database = NotesDatabase(userId)
                         database.deleteObsoleteNotes()
                         val notes = database.getNotes()
-                        deleteObsoleteAttachments(notes, userDirectory.name)
+                        deleteObsoleteAttachments(notes, userId)
+                        database.close()
                     }
+                    
                 }
             }
         } catch (e: Exception) {
