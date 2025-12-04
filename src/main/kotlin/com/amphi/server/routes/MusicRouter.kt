@@ -2,10 +2,9 @@ package com.amphi.server.routes
 
 import com.amphi.server.handlers.EventHandler
 import com.amphi.server.handlers.MusicHandler
-import com.amphi.server.handlers.ThemeHandler
 import com.amphi.server.handlers.WebsocketHandler
-import com.amphi.server.common.sendBadRequest
 import com.amphi.server.common.sendNotFound
+import com.amphi.server.handlers.ThemeHandler
 import io.vertx.core.http.HttpServerRequest
 
 object MusicRouter {
@@ -16,91 +15,128 @@ object MusicRouter {
 
         val split = req.path().split("/")
         when (split.size) {
-            5 -> {  //    ex: /music/songs/{song1}/files, /music/songs/{song1}/{file.mp3}
-                when(req.method().name().uppercase()) {
-                    "GET" -> {
-                        when (split[2]) {
-                            "songs" -> {
-                                if(split[4] == "files") {
-                                    MusicHandler.getFilesOfSomething(req, split, "songs")
-                                }
-                                else {
-                                    MusicHandler.downloadFile(req, split, "songs")
-                                }
-                            }
-                            "artists" -> {
-                                if(split[4] == "files") {
-                                    MusicHandler.getFilesOfSomething(req, split, "artists")
-                                }
-                                else {
-                                    MusicHandler.downloadFile(req, split, "artists")
-                                }
-                            }
-                            "albums" -> {
-                                if(split[4] == "covers") {
-                                    MusicHandler.getAlbumCovers(req, split)
-                                }
-                                else {
-                                    MusicHandler.downloadFile(req, split, "albums")
-                                }
-                            }
-                            "playlists" -> {
-                                if(split[4] == "thumbnails") {
-                                    MusicHandler.getPlaylistThumbnails(req, split)
-                                }
-                                else {
-                                    MusicHandler.downloadPlaylistThumbnail(req, split)
-                                }
-                            }
-                            else -> sendBadRequest(req)
-                        }
-                    }
-                    "POST" -> {
-                        when (split[2]) {
-                            "songs" ->  MusicHandler.uploadSongFile(req, split)
-                            "artists" ->  MusicHandler.uploadFile(req, split, "artists", "upload_artist_file")
-                            "albums" ->  MusicHandler.uploadFile(req, split, "albums", "upload_album_cover")
-                            "playlists" ->  MusicHandler.uploadPlaylistThumbnail(req, split)
-                            else -> sendBadRequest(req)
-                        }
-                    }
-                    "DELETE" -> {
-                        when (split[2]) {
-                            else -> sendBadRequest(req)
-                        }
-                    }
-                    else -> sendNotFound(req)
-                }
-            }
+//            6 -> { //    ex: /music/songs/{song1}/files/{file.mp3}
+//                when(req.method().name().uppercase()) {
+//                    "GET" -> {
+//                        when (split[2]) {
+//                            "songs" -> {
+//                                if(split[4] == "files") {
+//                                    MusicHandler.downloadFile(req, split, "songs")
+//                                }
+//                                else {
+//                                    sendNotFound(req)
+//                                }
+//                            }
+//                            "artists" -> {
+//                                if(split[4] == "images") {
+//                                    MusicHandler.downloadFile(req, split, "artists")
+//                                }
+//                                else {
+//                                    sendNotFound(req)
+//                                }
+//                            }
+//                            "albums" -> {
+//                                if(split[4] == "covers") {
+//                                    MusicHandler.downloadFile(req, split, "albums")
+//                                }
+//                                else {
+//                                    sendNotFound(req)
+//                                }
+//                            }
+//                            "playlists" -> {
+//                                if(split[4] == "thumbnails") {
+//                                    MusicHandler.downloadFile(req, split, "playlists")
+//                                }
+//                                else {
+//                                    sendNotFound(req)
+//                                }
+//                            }
+//                            else -> sendNotFound(req)
+//                        }
+//                    }
+//                    "POST" -> {
+//                        when (split[2]) {
+//                            "songs" -> MusicHandler.uploadFile(req, split, "songs")
+//                            "artists" -> MusicHandler.uploadFile(req, split, "artists")
+//                            "albums" -> MusicHandler.uploadFile(req, split, "albums")
+//                            "playlists" -> MusicHandler.uploadFile(req, split, "playlists")
+//                            else -> sendNotFound(req)
+//                        }
+//                    }
+//                    else -> sendNotFound(req)
+//                }
+//            }
+//            5 -> {  //    ex: /music/songs/{song1}/files, /music/songs/{song1}/{file.mp3}
+//                when(req.method().name().uppercase()) {
+//                    "GET" -> {
+//                        when (split[2]) {
+//                            "songs" -> {
+//                                if(split[4] == "files") {
+//                                    MusicHandler.getMediaFiles(req, split, "songs")
+//                                }
+//                                else {
+//                                    sendNotFound(req)
+//                                }
+//                            }
+//                            "artists" -> {
+//                                if(split[4] == "images") {
+//                                    MusicHandler.getMediaFiles(req, split, "artists")
+//                                }
+//                                else {
+//                                    sendNotFound(req)
+//                                }
+//                            }
+//                            "albums" -> {
+//                                if(split[4] == "covers") {
+//                                    MusicHandler.getMediaFiles(req, split, "albums")
+//                                }
+//                                else {
+//                                    sendNotFound(req)
+//                                }
+//                            }
+//                            "playlists" -> {
+//                                if(split[4] == "thumbnails") {
+//                                    MusicHandler.getMediaFiles(req, split, "playlists")
+//                                }
+//                                else {
+//                                    sendNotFound(req)
+//                                }
+//                            }
+//                            else -> sendNotFound(req)
+//                        }
+//                    }
+//                    else -> sendNotFound(req)
+//                }
+//            }
             4 -> {   //   ex :   /music/songs/{song1}  ,   /music/themes/{theme1}
                 when(req.method().name().uppercase()) {
                     "GET" -> {
                         when (split[2]) {
-                            "songs" ->  MusicHandler.getSongInfo(req, split)
-                            "artists" ->  MusicHandler.getInfo(req, split, "artists")
-                            "albums" -> MusicHandler.getAlbumInfo(req, split)
+                            "songs" ->  MusicHandler.getSong(req, split)
+                            "artists" ->  MusicHandler.getArtist(req, split)
+                            "albums" -> MusicHandler.getAlbum(req, split)
                             "playlists" -> MusicHandler.getPlaylist(req, split)
-                            "themes" -> ThemeHandler.downloadTheme(req, "music", split[3])
+                            "themes" -> MusicHandler.downloadTheme(req, split)
                             else -> sendNotFound(req)
                         }
                     }
                     "POST" -> {
                         when (split[2]) {
-                            "songs" ->  MusicHandler.uploadInfo(req, split, "songs", "upload_song_info")
-                            "artists" ->  MusicHandler.uploadInfo(req, split, "artists", "upload_artist_info")
-                            "albums" -> MusicHandler.uploadInfo(req, split, "albums", "upload_album_info")
+                            "songs" ->  MusicHandler.uploadSong(req, split)
+                            "artists" ->  MusicHandler.uploadArtist(req, split)
+                            "albums" -> MusicHandler.uploadAlbum(req, split)
                             "playlists" -> MusicHandler.uploadPlaylist(req, split)
-                            "themes" ->  ThemeHandler.uploadTheme(req, "music", split[3])
+                            "themes" ->  MusicHandler.uploadTheme(req, split)
                             else -> sendNotFound(req)
                         }
                     }
                     "DELETE" -> {
                         when(split[2]) {
-                            "songs" -> MusicHandler.delete(req, split, "songs", "delete_song")
-                            "artists" ->  MusicHandler.delete(req, split, "artists", "delete_artist")
-                            "albums" -> MusicHandler.delete(req, split, "albums" ,"delete_album")
+                            "songs" -> MusicHandler.deleteSong(req, split)
+                            "artists" ->  MusicHandler.deleteArtist(req, split)
+                            "albums" -> MusicHandler.deleteAlbum(req, split)
                             "playlists" -> MusicHandler.deletePlaylist(req, split)
-                            "themes" -> ThemeHandler.deleteTheme(req, "music", split[3])
+                            "themes" -> MusicHandler.deleteTheme(req, split)
                             else -> sendNotFound(req)
                         }
                     }
@@ -113,11 +149,11 @@ object MusicRouter {
                         when (req.path()) {
                             "/music/colors" -> ThemeHandler.getColors(req, "music")
                             "/music/events" -> EventHandler.getEvents(req, "music")
-                            "/music/themes" -> ThemeHandler.getThemes(req, "music")
+                            "/music/themes" -> MusicHandler.getThemes(req)
                             "/music/sync" -> websocketHandler.handleWebsocket(req)
-                            "/music/songs" -> MusicHandler.getItems(req, "songs")
-                            "/music/artists" -> MusicHandler.getItems(req, "artists")
-                            "/music/albums" -> MusicHandler.getItems(req, "albums")
+                            "/music/songs" -> MusicHandler.getSongs(req)
+                            "/music/artists" -> MusicHandler.getArtists(req)
+                            "/music/albums" -> MusicHandler.getAlbums(req)
                             "/music/playlists" -> MusicHandler.getPlaylists(req)
                             else -> sendNotFound(req)
                         }

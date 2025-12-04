@@ -1,7 +1,6 @@
 package com.amphi.server.models.music
 
 import com.amphi.server.utils.getJsonArray
-import com.amphi.server.utils.getJsonObject
 import com.amphi.server.utils.getNullableJsonArray
 import com.amphi.server.utils.getNullableLong
 import com.amphi.server.utils.getNullableString
@@ -66,5 +65,20 @@ class Playlist(
                 )
             }
         }
+    }
+
+    fun toJsonObject(): JsonObject {
+        val jsonObject = JsonObject()
+
+        jsonObject.put("id", id)
+        jsonObject.put("title", title)
+        jsonObject.put("songs", songs)
+        jsonObject.put("created", created)
+        jsonObject.put("modified", modified)
+        jsonObject.put("deleted", deleted)
+        jsonObject.put("thumbnails", thumbnails)
+        jsonObject.put("note", note)
+
+        return jsonObject
     }
 }

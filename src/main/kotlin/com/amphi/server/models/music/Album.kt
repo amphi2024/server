@@ -86,4 +86,21 @@ class Album(
             }
         }
     }
+
+    fun toJsonObject(): JsonObject {
+        val jsonObject = JsonObject()
+
+        jsonObject.put("id", id)
+        jsonObject.put("title", title)
+        jsonObject.put("covers", covers)
+        jsonObject.put("genres", genres)
+        jsonObject.put("artist_ids", artistIds)
+        jsonObject.put("added", added)
+        jsonObject.put("modified", modified)
+        jsonObject.put("deleted", deleted)
+        jsonObject.put("released", released)
+        jsonObject.put("description", description)
+
+        return jsonObject
+    }
 }

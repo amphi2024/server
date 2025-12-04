@@ -155,7 +155,13 @@ fun main() {
                         deleteObsoleteAttachments(notes, userId)
                         database.close()
                     }
-                    
+
+                    val musicDBFile = File("users/$userId/music/music.db")
+                    if(musicDBFile.exists()) {
+                        val database = MusicDatabase(userId)
+                        database.deleteObsoleteItems()
+                        database.close()
+                    }
                 }
             }
         } catch (e: Exception) {

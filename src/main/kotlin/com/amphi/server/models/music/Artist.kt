@@ -74,4 +74,22 @@ class Artist(
             }
         }
     }
+
+
+    fun toJsonObject(): JsonObject {
+        val jsonObject = JsonObject()
+
+        jsonObject.put("id", id)
+        jsonObject.put("name", name)
+        jsonObject.put("images", images)
+        jsonObject.put("members", members)
+        jsonObject.put("added", added)
+        jsonObject.put("modified", modified)
+        jsonObject.put("deleted", deleted)
+        jsonObject.put("debut", debut)
+        jsonObject.put("country", country)
+        jsonObject.put("description", description)
+
+        return jsonObject
+    }
 }

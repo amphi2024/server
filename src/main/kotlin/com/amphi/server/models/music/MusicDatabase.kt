@@ -4,6 +4,8 @@ import com.amphi.server.utils.setNullable
 import java.sql.DriverManager
 import java.sql.PreparedStatement
 import java.sql.Types
+import java.time.Duration
+import java.time.Instant
 
 class MusicDatabase(val userId: String) {
 
@@ -164,6 +166,90 @@ class MusicDatabase(val userId: String) {
         statement.close()
 
         return list
+    }
+
+    fun getPlaylists(): List<Playlist> {
+        val sql = "SELECT * FROM albums WHERE permanently_deleted IS NULL;"
+        val list = mutableListOf<Playlist>()
+        val statement = connection.createStatement()
+        val resultSet = statement.executeQuery(sql)
+        while (resultSet.next()) {
+            val playlist = Playlist.fromResultSet(resultSet)
+            list.add(playlist)
+        }
+
+        resultSet.close()
+        statement.close()
+
+        return list
+    }
+
+    fun getSongById(id: String): Song? {
+        val sql = "SELECT * FROM songs WHERE id = ?;"
+        val statement = connection.prepareStatement(sql)
+        statement.setString(1, id)
+        val resultSet = statement.executeQuery()
+        if (resultSet.next()) {
+            val song = Song.fromResultSet(resultSet)
+            resultSet.close()
+            statement.close()
+            return song
+        } else {
+            resultSet.close()
+            statement.close()
+            return null
+        }
+    }
+
+    fun getArtistById(id: String): Artist? {
+        val sql = "SELECT * FROM artists WHERE id = ?;"
+        val statement = connection.prepareStatement(sql)
+        statement.setString(1, id)
+        val resultSet = statement.executeQuery()
+        if (resultSet.next()) {
+            val artist = Artist.fromResultSet(resultSet)
+            resultSet.close()
+            statement.close()
+            return artist
+        } else {
+            resultSet.close()
+            statement.close()
+            return null
+        }
+    }
+
+    fun getAlbumById(id: String): Album? {
+        val sql = "SELECT * FROM albums WHERE id = ?;"
+        val statement = connection.prepareStatement(sql)
+        statement.setString(1, id)
+        val resultSet = statement.executeQuery()
+        if (resultSet.next()) {
+            val album = Album.fromResultSet(resultSet)
+            resultSet.close()
+            statement.close()
+            return album
+        } else {
+            resultSet.close()
+            statement.close()
+            return null
+        }
+    }
+
+    fun getPlaylistById(id: String): Playlist? {
+        val sql = "SELECT * FROM playlists WHERE id = ?;"
+        val statement = connection.prepareStatement(sql)
+        statement.setString(1, id)
+        val resultSet = statement.executeQuery()
+        if (resultSet.next()) {
+            val playlist = Playlist.fromResultSet(resultSet)
+            resultSet.close()
+            statement.close()
+            return playlist
+        } else {
+            resultSet.close()
+            statement.close()
+            return null
+        }
     }
 
     fun insertSong(song: Song, onComplete: ((result: Int) -> Unit)? = null) {
@@ -345,5 +431,121 @@ class MusicDatabase(val userId: String) {
         setNullable(6, playlist.deleted, Types.INTEGER)
         setNullable(7, playlist.thumbnails.toString(), Types.INTEGER)
         setNullable(8, playlist.note, Types.VARCHAR)
+    }
+
+    fun getThemes(): List<MusicTheme> {
+        val sql = "SELECT * FROM themes;"
+        val list = mutableListOf<MusicTheme>()
+        val statement = connection.createStatement()
+        val resultSet = statement.executeQuery(sql)
+        while (resultSet.next()) {
+            list.add(MusicTheme.fromResultSet(resultSet))
+        }
+
+        resultSet.close()
+        statement.close()
+
+        return list
+    }
+
+    fun insertTheme(theme: MusicTheme) {
+        val sql = """
+                INSERT INTO themes (
+                    id, title, created, modified, background_light, text_light, accent_light,
+                    card_light, background_dark, text_dark,
+                    accent_dark, card_dark
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(id) DO UPDATE SET
+                  title = excluded.title,
+                  created = excluded.created,
+                  modified = excluded.modified,
+                  background_light = excluded.background_light,
+                  text_light = excluded.text_light,
+                  accent_light = excluded.accent_light,
+                  card_light = excluded.card_light,
+                  background_dark = excluded.background_dark,
+                  text_dark = excluded.text_dark,
+                  accent_dark = excluded.accent_dark,
+                  card_dark = excluded.card_dark;
+                """.trimIndent()
+        val statement = connection.prepareStatement(sql)
+        statement.setTheme(theme)
+        statement.executeUpdate()
+        statement.close()
+    }
+
+    private fun PreparedStatement.setTheme(theme: MusicTheme) {
+        setString(1, theme.id)
+        setString(2, theme.title)
+        setLong(3, theme.created)
+        setLong(4, theme.modified)
+        setLong(5, theme.lightColors.background)
+        setLong(6, theme.lightColors.text)
+        setLong(7, theme.lightColors.accent)
+        setLong(8, theme.lightColors.card)
+        setLong(9, theme.darkColors.background)
+        setLong(10, theme.darkColors.text)
+        setLong(11, theme.darkColors.accent)
+        setLong(12, theme.darkColors.card)
+    }
+
+    fun getThemeById(id: String): MusicTheme? {
+        val sql = "SELECT * FROM themes WHERE id = ?;"
+        val statement = connection.prepareStatement(sql)
+        statement.setString(1, id)
+        val resultSet = statement.executeQuery()
+        if (resultSet.next()) {
+            val theme = MusicTheme.fromResultSet(resultSet)
+            resultSet.close()
+            statement.close()
+            return theme
+        } else {
+            resultSet.close()
+            statement.close()
+            return null
+        }
+    }
+
+    fun deleteTheme(id: String) {
+        val sql = "DELETE FROM themes WHERE id = ?;"
+        val preparedStatement = connection.prepareStatement(sql)
+        preparedStatement.setString(1, id)
+        preparedStatement.executeUpdate()
+        preparedStatement.close()
+    }
+
+    fun setSongDeleted(id: String) = setItemDeleted("songs", id)
+    fun setArtistDeleted(id: String) = setItemDeleted("artists", id)
+    fun setAlbumDeleted(id: String) = setItemDeleted("albums", id)
+    fun setPlaylistDeleted(id: String) = setItemDeleted("playlists", id)
+
+    private fun setItemDeleted(table: String, id: String) {
+        val sql = "UPDATE $table SET permanently_deleted = ? WHERE id = ?;"
+        connection.prepareStatement(sql).use { stmt ->
+            stmt.setLong(1, Instant.now().toEpochMilli())
+            stmt.setString(2, id)
+            stmt.executeUpdate()
+        }
+    }
+
+    fun deleteObsoleteItems() {
+        deleteObsoleteItemsForTable("songs")
+        deleteObsoleteItemsForTable("artists")
+        deleteObsoleteItemsForTable("album")
+        deleteObsoleteItemsForTable("playlists")
+    }
+
+    private fun deleteObsoleteItemsForTable(table: String) {
+        val threshold = Instant.now().minus(Duration.ofDays(30)).toEpochMilli()
+        val sql = """
+        DELETE FROM $table
+        WHERE permanently_deleted IS NOT NULL
+          AND permanently_deleted < ?
+        """.trimIndent()
+
+        connection.prepareStatement(sql).use { stmt ->
+            stmt.setLong(1, threshold)
+            stmt.executeUpdate()
+        }
     }
 }
