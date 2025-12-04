@@ -531,7 +531,7 @@ class MusicDatabase(val userId: String) {
     fun deleteObsoleteItems() {
         deleteObsoleteItemsForTable("songs")
         deleteObsoleteItemsForTable("artists")
-        deleteObsoleteItemsForTable("album")
+        deleteObsoleteItemsForTable("albums")
         deleteObsoleteItemsForTable("playlists")
     }
 
