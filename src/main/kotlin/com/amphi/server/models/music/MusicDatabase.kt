@@ -26,7 +26,7 @@ class MusicDatabase(val userId: String) {
                                 genres TEXT,
                                 artist_ids TEXT,
                                 album_id TEXT,
-                                added INTEGER NOT NULL,
+                                created INTEGER NOT NULL,
                                 modified INTEGER NOT NULL,
                                 deleted INTEGER,
                                 permanently_deleted INTEGER,
@@ -51,7 +51,7 @@ class MusicDatabase(val userId: String) {
                                 name TEXT NOT NULL,
                                 images TEXT,
                                 members TEXT,
-                                added INTEGER NOT NULL,
+                                created INTEGER NOT NULL,
                                 modified INTEGER NOT NULL,
                                 deleted INTEGER,
                                 permanently_deleted INTEGER,
@@ -69,7 +69,7 @@ class MusicDatabase(val userId: String) {
                                 covers TEXT,
                                 genres TEXT,
                                 artist_ids TEXT,
-                                added INTEGER NOT NULL,
+                                created INTEGER NOT NULL,
                                 modified INTEGER NOT NULL,
                                 deleted INTEGER,
                                 permanently_deleted INTEGER,
@@ -254,7 +254,7 @@ class MusicDatabase(val userId: String) {
     fun insertSong(song: Song, onComplete: ((result: Int) -> Unit)? = null) {
         val sql = """
                     INSERT INTO songs (
-                        id, title, genres, artist_ids, album_id, added, modified,
+                        id, title, genres, artist_ids, album_id, created, modified,
                         deleted, composer_ids, lyricist_ids, arranger_ids,
                         producer_ids, archived, released, track_number, disc_number,
                         description, files, featured_artist_ids
@@ -269,7 +269,7 @@ class MusicDatabase(val userId: String) {
                         genres = excluded.genres,
                         artist_ids = excluded.artist_ids,
                         album_id = excluded.album_id,
-                        added = excluded.added,
+                        created = excluded.created,
                         modified = excluded.modified,
                         deleted = excluded.deleted,
                         composer_ids = excluded.composer_ids,
@@ -298,7 +298,7 @@ class MusicDatabase(val userId: String) {
         setNullable(3, song.genres?.toString(), Types.VARCHAR)
         setNullable(4, song.artistIds?.toString(), Types.VARCHAR)
         setNullable(5, song.albumId, Types.VARCHAR)
-        setLong(6, song.added)
+        setLong(6, song.created)
         setLong(7, song.modified)
         setNullable(8, song.deleted, Types.INTEGER)
         setNullable(9, song.composerIds?.toString(), Types.VARCHAR)
@@ -317,7 +317,7 @@ class MusicDatabase(val userId: String) {
     fun insertArtist(artist: Artist, onComplete: ((result: Int) -> Unit)? = null) {
         val sql = """
                     INSERT INTO artists (
-                        id, name, images, members, added, modified,
+                        id, name, images, members, created, modified,
                         deleted, debut, country, description
                     ) VALUES (
                         ?, ?, ?, ?, ?, ?,
@@ -327,7 +327,7 @@ class MusicDatabase(val userId: String) {
                         name = excluded.name,
                         images = excluded.images,
                         members = excluded.members,
-                        added = excluded.added,
+                        created = excluded.created,
                         modified = excluded.modified,
                         deleted = excluded.deleted,
                         debut = excluded.debut,
@@ -347,7 +347,7 @@ class MusicDatabase(val userId: String) {
         setString(2, artist.name.toString())
         setString(3, artist.images.toString())
         setNullable(4, artist.members?.toString(), Types.VARCHAR)
-        setLong(5, artist.added)
+        setLong(5, artist.created)
         setLong(6, artist.modified)
         setNullable(7, artist.deleted, Types.INTEGER)
         setNullable(8, artist.debut, Types.INTEGER)
@@ -358,7 +358,7 @@ class MusicDatabase(val userId: String) {
     fun insertAlbum(album: Album, onComplete: ((result: Int) -> Unit)? = null) {
         val sql = """
                     INSERT INTO albums (
-                        id, title, covers, genres, artist_ids, added, modified,
+                        id, title, covers, genres, artist_ids, created, modified,
                         deleted, released, description
                     ) VALUES (
                         ?, ?, ?, ?, ?, ?, ?,
@@ -369,7 +369,7 @@ class MusicDatabase(val userId: String) {
                         covers = excluded.covers,
                         genres = excluded.genres,
                         artist_ids = excluded.artist_ids,
-                        added = excluded.added,
+                        created = excluded.created,
                         modified = excluded.modified,
                         deleted = excluded.deleted,
                         released = excluded.released,
@@ -389,7 +389,7 @@ class MusicDatabase(val userId: String) {
         setNullable(3, album.covers?.toString(), Types.VARCHAR)
         setNullable(4, album.genres?.toString(), Types.VARCHAR)
         setNullable(5, album.artistIds?.toString(), Types.VARCHAR)
-        setLong(6, album.added)
+        setLong(6, album.created)
         setLong(7, album.modified)
         setNullable(8, album.deleted, Types.INTEGER)
         setNullable(9, album.released, Types.INTEGER)

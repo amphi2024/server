@@ -14,7 +14,7 @@ class Artist(
     var name: JsonObject,
     var images: JsonArray? = null,
     var members: JsonArray? = null,
-    var added: Long,
+    var created: Long,
     var modified: Long,
     var deleted: Long? = null,
     var debut: Long? = null,
@@ -28,7 +28,7 @@ class Artist(
                 name = resultSet.getJsonObject("name"),
                 images = resultSet.getNullableJsonArray("images"),
                 members = resultSet.getNullableJsonArray("members"),
-                added = resultSet.getLong("added"),
+                created = resultSet.getLong("created"),
                 modified = resultSet.getLong("modified"),
                 deleted = resultSet.getNullableLong("deleted"),
                 debut = resultSet.getNullableLong("debut"),
@@ -42,7 +42,7 @@ class Artist(
                 id = id,
                 name = jsonObject.getJsonObject("name"),
                 images = images,
-                added = jsonObject.getLong("added"),
+                created = jsonObject.getLong("added"),
                 modified = jsonObject.getLong("modified")
             )
         }
@@ -67,7 +67,7 @@ class Artist(
                 return Artist(
                     id = infoFile.parentFile.nameWithoutExtension,
                     name = JsonObject(),
-                    added = 0,
+                    created = 0,
                     modified = 0,
                     description = infoFile.readText()
                 )
@@ -83,7 +83,7 @@ class Artist(
         jsonObject.put("name", name)
         jsonObject.put("images", images)
         jsonObject.put("members", members)
-        jsonObject.put("added", added)
+        jsonObject.put("created", created)
         jsonObject.put("modified", modified)
         jsonObject.put("deleted", deleted)
         jsonObject.put("debut", debut)

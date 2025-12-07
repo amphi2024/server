@@ -17,7 +17,7 @@ class Song(
     var genres: JsonArray? = null,
     var artistIds: JsonArray? = null,
     var albumId: String? = null,
-    var added: Long,
+    var created: Long,
     var modified: Long,
     var deleted: Long? = null,
     var composerIds: JsonArray? = null,
@@ -40,7 +40,7 @@ class Song(
                 genres = resultSet.getJsonArray("genres"),
                 artistIds = resultSet.getNullableJsonArray("artist_ids"),
                 albumId =  resultSet.getNullableString("album_id"),
-                added = resultSet.getLong("added"),
+                created = resultSet.getLong("created"),
                 modified = resultSet.getLong("modified"),
                 deleted = resultSet.getNullableLong("deleted"),
                 composerIds = resultSet.getNullableJsonArray("composer_ids"),
@@ -72,7 +72,7 @@ class Song(
                 genres = jsonObject.getJsonArray("genre"),
                 artistIds = legacyIdsValue(jsonObject.getValue("artist") as? String),
                 albumId = jsonObject.getValue("album") as? String,
-                added = jsonObject.getLong("added"),
+                created = jsonObject.getLong("added"),
                 modified = jsonObject.getLong("modified"),
                 deleted = null,
                 composerIds = legacyIdsValue(jsonObject.getValue("composer") as? String),
@@ -113,7 +113,7 @@ class Song(
                     id = infoFile.parentFile.nameWithoutExtension,
                     title = JsonObject(),
                     genres = JsonArray(),
-                    added = 0,
+                    created = 0,
                     modified = 0,
                     description = infoFile.readText(),
                     files = JsonArray(),
@@ -132,7 +132,7 @@ class Song(
         jsonObject.put("artist_ids", artistIds)
         jsonObject.put("album_id", albumId)
 
-        jsonObject.put("added", added)
+        jsonObject.put("created", created)
         jsonObject.put("modified", modified)
         jsonObject.put("deleted", deleted)
 

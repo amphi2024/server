@@ -15,7 +15,7 @@ class Album(
     var covers: JsonArray? = null,
     var genres: JsonArray? = null,
     var artistIds: JsonArray? = null,
-    var added: Long,
+    var created: Long,
     var modified: Long,
     var deleted: Long? = null,
     var released: Long? = null,
@@ -29,7 +29,7 @@ class Album(
                 covers = resultSet.getNullableJsonArray("covers"),
                 genres = resultSet.getNullableJsonArray("genres"),
                 artistIds = resultSet.getNullableJsonArray("artist_ids"),
-                added = resultSet.getLong("added"),
+                created = resultSet.getLong("created"),
                 modified = resultSet.getLong("modified"),
                 deleted = resultSet.getLong("deleted"),
                 released = resultSet.getNullableLong("released"),
@@ -50,7 +50,7 @@ class Album(
                 covers = covers,
                 genres = JsonArray().add(jsonObject.getJsonObject("genre")),
                 artistIds = artistIds,
-                added = jsonObject.getLong("added"),
+                created = jsonObject.getLong("added"),
                 modified = jsonObject.getLong("modified")
             )
         }
@@ -79,7 +79,7 @@ class Album(
                 return Album(
                     id = infoFile.parentFile.nameWithoutExtension,
                     title = JsonObject(),
-                    added = 0,
+                    created = 0,
                     modified = 0,
                     description = infoFile.readText()
                 )
@@ -95,7 +95,7 @@ class Album(
         jsonObject.put("covers", covers)
         jsonObject.put("genres", genres)
         jsonObject.put("artist_ids", artistIds)
-        jsonObject.put("added", added)
+        jsonObject.put("created", created)
         jsonObject.put("modified", modified)
         jsonObject.put("deleted", deleted)
         jsonObject.put("released", released)
