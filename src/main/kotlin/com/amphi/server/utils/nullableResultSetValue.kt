@@ -17,20 +17,19 @@ fun ResultSet.getNullableInt(columnLabel: String): Int? {
 }
 
 fun ResultSet.getNullableJsonArray(columnLabel: String): JsonArray? {
-    return getObject(columnLabel)?.let { value ->
-        JsonArray(value as? String)
-    }
+    return runCatching {
+        getString(columnLabel)?.let { JsonArray(it) }
+    }.getOrNull()
 }
 
-
 fun ResultSet.getJsonArray(columnLabel: String): JsonArray {
-    return getObject(columnLabel)?.let { value ->
-        JsonArray(value as? String)
-    } ?: JsonArray()
+    return runCatching {
+        JsonArray(getString(columnLabel))
+    }.getOrDefault(JsonArray())
 }
 
 fun ResultSet.getJsonObject(columnLabel: String): JsonObject {
-    return getObject(columnLabel)?.let { value ->
-        JsonObject(value as? String)
-    } ?: JsonObject()
+    return runCatching {
+        JsonObject(getString(columnLabel))
+    }.getOrDefault(JsonObject())
 }
