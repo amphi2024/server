@@ -30,7 +30,11 @@ fun migrateMusic(userDirectory: File) {
                     val song = Song.legacy(infoFile)
                     database.insertSong(song) { result ->
                         if(result > 0) {
-                            moveToTrash(userId = userId, path = "music/songs/${id[0]}/${id[1]}/$id", filename = infoFile.name)
+                            directory.listFiles()?.forEach { file ->
+                                if(file.extension == "json") {
+                                    moveToTrash(userId = userId, path = "music/songs/${id[0]}/${id[1]}/$id", filename = file.name)
+                                }
+                            }
                         }
                         else {
                             migrated = false
