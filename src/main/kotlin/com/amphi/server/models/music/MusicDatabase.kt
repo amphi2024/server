@@ -168,7 +168,7 @@ class MusicDatabase(val userId: String) {
     }
 
     fun getPlaylists(): List<Playlist> {
-        val sql = "SELECT * FROM albums WHERE permanently_deleted IS NULL;"
+        val sql = "SELECT * FROM playlists WHERE permanently_deleted IS NULL;"
         val list = mutableListOf<Playlist>()
         val statement = connection.createStatement()
         val resultSet = statement.executeQuery(sql)
