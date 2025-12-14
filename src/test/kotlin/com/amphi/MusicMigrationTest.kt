@@ -122,7 +122,9 @@ class MusicMigrationTest {
                 released = if(i % 2 == 0) nowMilli else null,
                 trackNumber = if(i % 2 == 0) i else null,
                 discNumber = if(i % 2 == 0) i else null,
-                archived = if(i % 2 == 0) true else null
+                archived = if(i % 2 == 0) true else null,
+                fileCreate = i != 7,
+                index = i
             )
         }
 
@@ -148,7 +150,7 @@ class MusicMigrationTest {
         return jsonArray
     }
 
-    private fun createSampleSong(songsDir: File, id: String, title: Map<String, String>, genres: Set<Map<String, String>>, artistId: String?, albumId: String?, composerId: String?, added: Long, modified: Long, released: Long?, trackNumber: Int?, discNumber: Int?, archived: Boolean?) {
+    private fun createSampleSong(songsDir: File, id: String, title: Map<String, String>, genres: Set<Map<String, String>>, artistId: String?, albumId: String?, composerId: String?, added: Long, modified: Long, released: Long?, trackNumber: Int?, discNumber: Int?, archived: Boolean?, fileCreate: Boolean = true, index: Int) {
         val directory = File(songsDir, "${id[0]}/${id[1]}/$id")
         directory.mkdirs()
         val infoFile = File(directory, "info.json")
@@ -172,16 +174,52 @@ class MusicMigrationTest {
         infoFile.writeText(jsonObject.toString())
 
         val songInfoFile = File(directory, "SONG_FILE_ID.json")
-        songInfoFile.writeText("""
-            {"format":"mp3","lyrics":{"default":[{"startsAt":0,"endsAt":0,"text":""}]}}
-        """.trimIndent())
+        when (index) {
+            7 -> {
+                songInfoFile.writeText(
+                    """
+                {"format":"null","lyrics":{"default":[{"startsAt":0,"endsAt":0,"text":""}]}}
+            """.trimIndent()
+                )
+            }
+            6 -> {
+                songInfoFile.writeText(
+                    """
+                {"format":null,"lyrics":{"default":[{"startsAt":0,"endsAt":0,"text":""}]}}
+            """.trimIndent()
+                )
+            }
+            5 -> {
+                songInfoFile.writeText(
+                    """
+                {"format":"mp3","lyrics": null}
+            """.trimIndent()
+                )
+            }
+            4 -> {
+                songInfoFile.writeText(
+                    """
+                {"format":"mp3","lyrics": null}}
+            """.trimIndent()
+                )
+            }
+            else -> {
+                songInfoFile.writeText(
+                    """
+                {"format":"mp3","lyrics":{"default":[{"startsAt":0,"endsAt":0,"text":""}]}}
+            """.trimIndent()
+                )
+            }
+        }
         val songFile = File(directory, "SONG_FILE_ID.mp3")
         songFile.writeBytes(byteArrayOf(10))
 
-        val songInfoFile1 = File(directory, "SONG_FILE_ID_1.json")
-        songInfoFile1.writeText("""
+        if(fileCreate) {
+            val songInfoFile1 = File(directory, "SONG_FILE_ID_1.json")
+            songInfoFile1.writeText("""
             {"format":"flac","lyrics":{"default":[{"startsAt":0,"endsAt":0,"text":"Hi"}]}}
         """.trimIndent())
+        }
         val songFile1 = File(directory, "SONG_FILE_ID_1.flac")
         songFile1.writeBytes(byteArrayOf(10))
     }

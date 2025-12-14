@@ -87,22 +87,59 @@ class Song(
             )
         }
 
+        private fun fileFormat(jsonObject: JsonObject, file: File) : String {
+            val format = jsonObject.getValue("format")
+            if(format is String && !format.isBlank() && format != "null") {
+                return format
+            }
+            file.parentFile.listFiles()?.forEach { child ->
+                if(child.nameWithoutExtension == file.nameWithoutExtension && child.isFile && child.extension != "json") {
+                    return child.extension
+                }
+            }
+            return "mp3"
+        }
+
         fun legacy(infoFile: File) : Song {
             try {
                 val jsonObject = JsonObject(infoFile.readText())
                 val files = JsonArray()
 
                 infoFile.parentFile.listFiles()?.forEach { file ->
-                    if(file.nameWithoutExtension != "info" && file.isFile && file.extension == "json") {
-                        val fileData = JsonObject()
-                        val songFileId = file.nameWithoutExtension
-                        val legacyData = JsonObject(file.readText())
-                        fileData.put("id", songFileId)
-                        fileData.put("filename", file.name)
-                        fileData.put("format", legacyData.getValue("format"))
-                        fileData.put("lyrics", legacyData.getValue("lyrics"))
-                        fileData.put("priority", 0)
-                        files.add(fileData)
+                    if(file.nameWithoutExtension != "info" && file.isFile) {
+                        if(file.extension == "json") {
+                            runCatching {
+                                val fileData = JsonObject()
+                                val songFileId = file.nameWithoutExtension
+                                val legacyData = JsonObject(file.readText())
+                                fileData.put("id", songFileId)
+                                fileData.put("filename", "${file.nameWithoutExtension}.${fileFormat(legacyData, file)}")
+                                fileData.put("format", fileFormat(legacyData, file))
+                                fileData.put("lyrics", legacyData.getValue("lyrics"))
+                                fileData.put("priority", 0)
+                                files.add(fileData)
+                            }.getOrElse {
+                                val fileData = JsonObject()
+                                val songFileId = file.nameWithoutExtension
+                                fileData.put("id", songFileId)
+                                fileData.put("filename", "${file.nameWithoutExtension}.${fileFormat(JsonObject(), file)}")
+                                fileData.put("format", fileFormat(JsonObject(), file))
+                                fileData.put("priority", 0)
+                                files.add(fileData)
+                            }
+                        }
+                        else {
+                            val songFileInfoFile = File(file.parentFile, "${file.nameWithoutExtension}.json")
+                            if(!songFileInfoFile.exists()) {
+                                val fileData = JsonObject()
+                                val songFileId = file.nameWithoutExtension
+                                fileData.put("id", songFileId)
+                                fileData.put("filename", file.name)
+                                fileData.put("format", file.extension)
+                                fileData.put("priority", 0)
+                                files.add(fileData)
+                            }
+                        }
                     }
                 }
                 return legacy(jsonObject = jsonObject, id = infoFile.parentFile.nameWithoutExtension, files = files)
