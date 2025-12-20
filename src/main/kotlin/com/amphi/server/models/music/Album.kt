@@ -31,7 +31,7 @@ class Album(
                 artistIds = resultSet.getNullableJsonArray("artist_ids"),
                 created = resultSet.getLong("created"),
                 modified = resultSet.getLong("modified"),
-                deleted = resultSet.getLong("deleted"),
+                deleted = resultSet.getNullableLong("deleted"),
                 released = resultSet.getNullableLong("released"),
                 description = resultSet.getNullableString("description")
             )
