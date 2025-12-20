@@ -8,13 +8,12 @@ import java.io.File
 
 fun migratePhotos(userDirectory: File) {
     val userId = userDirectory.name
-    val database = PhotosDatabase(userId)
     val albumsDirectory = File("${userDirectory.path}/photos/albums")
 
     if(!albumsDirectory.exists()) {
         return
     }
-
+    val database = PhotosDatabase(userId)
     val libraryDirectory = File("${userDirectory.path}/photos/library")
 
     var migrated = true

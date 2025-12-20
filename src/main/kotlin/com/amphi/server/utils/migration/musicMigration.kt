@@ -10,11 +10,11 @@ import java.io.File
 
 fun migrateMusic(userDirectory: File) {
     val userId = userDirectory.name
-    val database = MusicDatabase(userId)
     val songsDirectory = File("${userDirectory.path}/music/songs")
     if(!songsDirectory.exists()) {
         return
     }
+    val database = MusicDatabase(userId)
     val artistsDirectory = File("${userDirectory.path}/music/artists")
     val albumsDirectory = File("${userDirectory.path}/music/albums")
     val playlistsDirectory = File("${userDirectory.path}/music/playlists")
