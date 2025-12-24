@@ -255,7 +255,7 @@ object MusicHandler {
 
     fun uploadFile(req: HttpServerRequest, split: List<String>, directoryName: String) {
         val id = split[3]
-        val filename = split[4]
+        val filename = split[5]
 
         handleAuthorization(req) { token ->
             req.isExpectMultipart = true
