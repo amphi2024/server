@@ -169,6 +169,8 @@ class Song(
         jsonObject.put("artist_ids", artistIds)
         jsonObject.put("album_id", albumId)
 
+        //TODO: remove added in next version
+        jsonObject.put("added", created)
         jsonObject.put("created", created)
         jsonObject.put("modified", modified)
         jsonObject.put("deleted", deleted)

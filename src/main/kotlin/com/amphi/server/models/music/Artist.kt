@@ -83,6 +83,8 @@ class Artist(
         jsonObject.put("name", name)
         jsonObject.put("images", images)
         jsonObject.put("members", members)
+        //TODO: remove added in next version
+        jsonObject.put("added", created)
         jsonObject.put("created", created)
         jsonObject.put("modified", modified)
         jsonObject.put("deleted", deleted)

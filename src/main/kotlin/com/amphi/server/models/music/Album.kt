@@ -95,6 +95,8 @@ class Album(
         jsonObject.put("covers", covers)
         jsonObject.put("genres", genres)
         jsonObject.put("artist_ids", artistIds)
+        //TODO: remove added in next version
+        jsonObject.put("added", created)
         jsonObject.put("created", created)
         jsonObject.put("modified", modified)
         jsonObject.put("deleted", deleted)

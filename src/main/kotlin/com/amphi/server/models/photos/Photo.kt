@@ -76,6 +76,9 @@ class Photo(
 
         jsonObject.put("id", id)
         jsonObject.put("title", title)
+
+        //TODO: remove added in next version
+        jsonObject.put("added", created)
         jsonObject.put("created", created)
         jsonObject.put("modified", modified)
         jsonObject.put("date", date)
