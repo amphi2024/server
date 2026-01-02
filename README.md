@@ -50,3 +50,28 @@ Advanced users can set up remote access using methods such as:
 - Running the server as a system service
 
 Make sure to consider security when enabling remote access.
+
+## Update
+
+### 1. Stop the Service (for Linux)
+
+```bash
+sudo systemctl stop amphi-server
+```
+
+### 2. Rename old server file
+
+```bash
+mv server.jar server-old.jar
+```
+### 3. Download Server
+
+```bash
+curl -L https://github.com/amphi2024/server/releases/download/v{LATEST_VERSION}/server-{LATEST_VERSION}.jar -o server.jar
+```
+
+### 4. Restart Service (for Linux)
+
+```bash
+sudo systemctl restart amphi-server
+```
