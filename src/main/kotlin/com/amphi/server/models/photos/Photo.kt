@@ -77,12 +77,13 @@ class Photo(
         jsonObject.put("id", id)
         jsonObject.put("title", title)
 
-        //TODO: remove added in next version
+        //TODO: remove added, mimeType in next version
         jsonObject.put("added", created)
         jsonObject.put("created", created)
         jsonObject.put("modified", modified)
         jsonObject.put("date", date)
         jsonObject.put("deleted", deleted)
+        jsonObject.put("mimeType", mimeType)
         jsonObject.put("mime_type", mimeType)
         jsonObject.put("sha256", sha256)
         jsonObject.put("note", note)
