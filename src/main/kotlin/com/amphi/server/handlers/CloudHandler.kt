@@ -8,7 +8,7 @@ import com.amphi.server.common.sendFileNotExists
 import com.amphi.server.common.sendNotFound
 import com.amphi.server.common.sendSuccess
 import com.amphi.server.common.sendUploadFailed
-import com.amphi.server.configs.ServerSettings
+import com.amphi.server.configs.AppConfig
 import com.amphi.server.models.cloud.CloudDatabase
 import com.amphi.server.models.FileModel
 import com.amphi.server.utils.contentTypeByExtension
@@ -78,7 +78,7 @@ object CloudHandler {
                     val filePath = "${directory.path}/${fileModel.version}/${filename}"
                     upload.streamToFileSystem(filePath).onComplete { ar ->
                         if (ar.succeeded()) {
-                            if (ServerSettings.generateMediaThumbnail) {
+                            if (AppConfig.media.generateThumbnail) {
                                 generateThumbnail(
                                     fileExtension = fileExtension,
                                     input = filePath,

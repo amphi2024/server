@@ -3,7 +3,7 @@ package com.amphi.server
 import com.amphi.server.common.Messages
 import com.amphi.server.common.StatusCode
 import com.amphi.server.configs.SQLITE
-import com.amphi.server.configs.ServerSettings
+import com.amphi.server.configs.AppConfig
 import com.amphi.server.handlers.StorageHandler
 import com.amphi.server.routes.MusicRouter
 import com.amphi.server.routes.NotesRouter
@@ -39,9 +39,10 @@ import java.util.concurrent.TimeUnit
 
 const val VERSION = "3.0.1"
 
-val authorizationService = if (ServerSettings.databaseType == SQLITE) AuthorizationSqliteService() else AuthorizationPostgresService()
-val eventService = if (ServerSettings.databaseType == SQLITE) EventSqliteService() else EventPostgresService()
-val trashService = if (ServerSettings.databaseType == SQLITE) TrashSqliteService() else TrashPostgresService()
+val authorizationService =
+    if (AppConfig.database.type == SQLITE) AuthorizationSqliteService() else AuthorizationPostgresService()
+val eventService = if (AppConfig.database.type == SQLITE) EventSqliteService() else EventPostgresService()
+val trashService = if (AppConfig.database.type == SQLITE) TrashSqliteService() else TrashPostgresService()
 
 class App : AbstractVerticle(), Handler<HttpServerRequest> {
 
@@ -52,6 +53,7 @@ class App : AbstractVerticle(), Handler<HttpServerRequest> {
                 path == "/" -> {
                     req.response().putHeader("content-type", "text/plain").end("Server is running. Let's go!")
                 }
+
                 path == "/version" -> req.response().putHeader("content-type", "text/plain").end(VERSION)
                 path == "/storage" -> StorageHandler.getStorageInfo(req)
                 path.startsWith("/users") -> UserRouter.route(req)
@@ -71,37 +73,35 @@ class App : AbstractVerticle(), Handler<HttpServerRequest> {
 
     override fun start() {
 
-        vertx.createHttpServer().requestHandler{req ->
-
+        vertx.createHttpServer().requestHandler { req ->
             val ipAddress = req.remoteAddress().hostAddress()
-//            println("request - ip: $ipAddress, ${req.path()} ${req.method().name()}")
-            if(RateLimiter.isAllowed(ipAddress)) {
-                if(ServerSettings.whitelistOnly) {
-                    if(ServerSettings.inWhiteList(ipAddress)) {
+            println(req.remoteAddress().host())
+            if (RateLimiter.isAllowed(ipAddress)) {
+                if (AppConfig.security.accessControl.whiteList.enabled) {
+                    if (AppConfig.security.accessControl.whiteList.list.contains(ipAddress)) {
                         handle(req)
-                    }
-                    else {
+                    } else {
                         req.response()
                             .setStatusCode(StatusCode.FORBIDDEN)
                             .putHeader("content-type", "text/plain; charset=UTF-8")
                             .end(Messages.WHITE_LIST_ONLY)
                     }
-                }
-                else if(ServerSettings.inBlackList(ipAddress)) {
-                    req.response()
-                        .setStatusCode(StatusCode.FORBIDDEN)
-                        .putHeader("content-type", "text/plain; charset=UTF-8")
-                        .end(ServerSettings.blockMessage)
-                }
-                else {
+                } else if (AppConfig.security.accessControl.blackList.enabled) {
+                    if (AppConfig.security.accessControl.blackList.list.contains(ipAddress)) {
+                        req.response()
+                            .setStatusCode(StatusCode.FORBIDDEN)
+                            .putHeader("content-type", "text/plain; charset=UTF-8")
+                            .end(AppConfig.security.accessControl.blackList.blockMessage)
+                    } else {
+                        handle(req)
+                    }
+                } else {
                     handle(req)
                 }
-            }
-            else {
+            } else {
                 req.response().setStatusCode(429).end(Messages.TOO_MANY_REQUESTS)
             }
-
-    }.listen(ServerSettings.port)
+        }.listen(AppConfig.port)
     }
 }
 
@@ -110,12 +110,11 @@ fun main() {
     val vertx = Vertx.vertx()
     vertx.deployVerticle(App())
 
-    println("Server is running. Let's go! (port: ${ServerSettings.port}, version: $VERSION)")
+    println("Server is running. Let's go! (port: ${AppConfig.port}, version: $VERSION)")
     Runtime.getRuntime().addShutdownHook(Thread {
-        if(ServerSettings.databaseType == SQLITE) {
+        if (AppConfig.database.type == SQLITE) {
             ServerSqliteDatabase.close()
-        }
-        else {
+        } else {
             ServerPostgresDatabase.close()
         }
     })
@@ -133,7 +132,7 @@ fun main() {
                 users.listFiles()?.forEach { userDirectory ->
                     val oldTrash = File("${userDirectory.path}/trashes")
 
-                    if(oldTrash.exists() && oldTrash.listFiles().isNullOrEmpty()) {
+                    if (oldTrash.exists() && oldTrash.listFiles().isNullOrEmpty()) {
                         oldTrash.delete()
                     }
 
@@ -158,14 +157,14 @@ fun main() {
                     }
 
                     val musicDBFile = File("users/$userId/music/music.db")
-                    if(musicDBFile.exists()) {
+                    if (musicDBFile.exists()) {
                         val database = MusicDatabase(userId)
                         database.deleteObsoleteItems()
                         database.close()
                     }
 
                     val photosDBFile = File("users/$userId/photos/photos.db")
-                    if(photosDBFile.exists()) {
+                    if (photosDBFile.exists()) {
                         val database = PhotosDatabase(userId)
                         database.deleteObsoleteItems()
                         database.close()

@@ -1,6 +1,6 @@
 package com.amphi.server.services.auth
 
-import com.amphi.server.configs.ServerSettings
+import com.amphi.server.configs.AppConfig
 import com.amphi.server.configs.ServerSqliteDatabase.connection
 import com.amphi.server.models.Token
 import java.time.Duration
@@ -70,7 +70,7 @@ class AuthorizationSqliteService : AuthorizationService {
 
   override fun deleteObsoleteTokens() {
       val statement = connection.createStatement()
-      val days = Duration.ofDays(ServerSettings.loginExpirationPeriod.toLong())
+      val days = Duration.ofDays(AppConfig.loginExpirationDays.toLong())
       val fewDayAgo = Instant.now().minus(days)
       val iterator = tokens.iterator()
       while (iterator.hasNext()) {

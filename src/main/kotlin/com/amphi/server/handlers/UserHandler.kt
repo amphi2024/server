@@ -1,7 +1,7 @@
 package com.amphi.server.handlers
 
 import com.amphi.server.common.Messages
-import com.amphi.server.configs.ServerSettings
+import com.amphi.server.configs.AppConfig
 import com.amphi.server.common.StatusCode
 import com.amphi.server.common.sendAuthFailed
 import com.amphi.server.common.sendSuccess
@@ -14,7 +14,7 @@ import io.vertx.core.http.HttpServerRequest
 
 object UserHandler {
 
-    private val userService = if(ServerSettings.databaseType == SQLITE) UserSqliteService() else UserPostgresService()
+    private val userService = if(AppConfig.database.type == SQLITE) UserSqliteService() else UserPostgresService()
 
     fun register(req: HttpServerRequest) {
         req.bodyHandler { buffer ->
@@ -29,7 +29,7 @@ object UserHandler {
                 if (id.isNullOrBlank() || name.isNullOrBlank() || password.isNullOrBlank()) {
                     sendAuthFailed(req)
                 } else {
-                    if(ServerSettings.openRegistration) {
+                    if(AppConfig.security.allowUserRegistration) {
                         userService.register(id = id, name = name, password = password, onFailed = {
                             req.response().setStatusCode(StatusCode.BAD_REQUEST).end(Messages.ID_ALREADY_TAKEN)
                         }, onSuccess = {

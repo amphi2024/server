@@ -6,7 +6,7 @@ import com.amphi.server.common.sendFileNotExists
 import com.amphi.server.common.sendNotFound
 import com.amphi.server.common.sendSuccess
 import com.amphi.server.common.sendUploadFailed
-import com.amphi.server.configs.ServerSettings
+import com.amphi.server.configs.AppConfig
 import com.amphi.server.eventService
 import com.amphi.server.models.photos.Album
 import com.amphi.server.models.photos.Photo
@@ -176,13 +176,13 @@ object PhotosHandler {
                 upload.streamToFileSystem(photoFilePath).onComplete { ar ->
                     if (ar.succeeded()) {
                         if (isVideoExtension(fileExtension)) {
-                            if (ServerSettings.generateMediaThumbnail) {
+                            if (AppConfig.media.generateThumbnail) {
                                 generateVideoThumbnail(
                                     input = photoFilePath,
                                     output = "${directory.path}/thumbnail.jpg"
                                 )
                             }
-                            if (ServerSettings.multiResVideo) {
+                            if (AppConfig.media.multiResVideo) {
                                 val output1080p = "${directory.path}/photo_1080p.$fileExtension"
                                 val output720p = "${directory.path}/photo_720p.$fileExtension"
                                 generateMultiResVideo(
@@ -194,7 +194,7 @@ object PhotosHandler {
 
                         }
 
-                        if (ServerSettings.generateMediaThumbnail) {
+                        if (AppConfig.media.generateThumbnail) {
                             generateImageThumbnail(
                                 input = photoFilePath,
                                 output = "${directory.path}/thumbnail.jpg"
@@ -234,7 +234,7 @@ object PhotosHandler {
             if (file.exists()) {
                 req.response().putHeader("content-type", "image/jpeg").sendFile(file.path)
             } else {
-                if (ServerSettings.generateMediaThumbnail) {
+                if (AppConfig.media.generateThumbnail) {
                     photoFileById(directoryPath)?.let { photoFile ->
                         if (isVideoExtension(photoFile.extension)) {
                             generateVideoThumbnail(photoFile.path, file.path)

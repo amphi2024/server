@@ -26,6 +26,7 @@ dependencies {
     implementation("io.netty:netty-resolver-dns-native-macos:4.2.3.Final:osx-aarch_64")
     implementation("de.mkammerer:argon2-jvm:2.12")
     implementation("io.vertx:vertx-pg-client:5.0.7")
+    implementation("net.mamoe.yamlkt:yamlkt:0.13.0")
 }
 
 java {
