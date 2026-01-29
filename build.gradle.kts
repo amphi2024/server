@@ -21,11 +21,11 @@ dependencies {
 
     implementation(libs.guava)
 
-    implementation("io.vertx:vertx-core:5.0.1")
+    implementation("io.vertx:vertx-core:5.0.7")
     implementation("org.xerial:sqlite-jdbc:3.50.3.0")
     implementation("io.netty:netty-resolver-dns-native-macos:4.2.3.Final:osx-aarch_64")
     implementation("de.mkammerer:argon2-jvm:2.12")
-    implementation("io.vertx:vertx-pg-client:5.0.1")
+    implementation("io.vertx:vertx-pg-client:5.0.7")
 }
 
 java {
