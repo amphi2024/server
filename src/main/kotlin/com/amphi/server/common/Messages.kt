@@ -13,4 +13,5 @@ object Messages {
     const val WHITE_LIST_ONLY = "server is whitelist only"
     const val TOO_MANY_REQUESTS = "too many requests"
     const val BAD_REQUEST = "bad request"
+    const val FORBIDDEN_HOST = "forbidden host"
 }

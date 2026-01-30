@@ -50,61 +50,72 @@ val userService = if(AppConfig.database.type == SQLITE) UserSqliteService() else
 class App : AbstractVerticle(), Handler<HttpServerRequest> {
 
     override fun handle(req: HttpServerRequest) {
-        try {
-            val path = req.path()
-            println(path)
-            when {
-                path == "/" -> {
-                    req.response().putHeader("content-type", "text/plain").end("Server is running. Let's go!")
-                }
+        if(RateLimiter.isAllowed(req.remoteAddress().hostAddress())) {
+            try {
+                val path = req.path()
+                when {
+                    path == "/" -> {
+                        req.response().putHeader("content-type", "text/plain").end("Server is running. Let's go!")
+                    }
 
-                path == "/version" -> req.response().putHeader("content-type", "text/plain").end(VERSION)
-                path == "/storage" -> StorageHandler.getStorageInfo(req)
-                path.startsWith("/users") -> UserRouter.route(req)
-                path.startsWith("/notes") -> NotesRouter.route(req)
-                path.startsWith("/music") -> MusicRouter.route(req)
-                path.startsWith("/photos") -> PhotosRouter.route(req)
-                path.startsWith("/cloud") -> CloudRouter.route(req)
-                else -> sendNotFound(req)
+                    path == "/version" -> req.response().putHeader("content-type", "text/plain").end(VERSION)
+                    path == "/storage" -> StorageHandler.getStorageInfo(req)
+                    path.startsWith("/users") -> UserRouter.route(req)
+                    path.startsWith("/notes") -> NotesRouter.route(req)
+                    path.startsWith("/music") -> MusicRouter.route(req)
+                    path.startsWith("/photos") -> PhotosRouter.route(req)
+                    path.startsWith("/cloud") -> CloudRouter.route(req)
+                    else -> sendNotFound(req)
+                }
+            } catch (e: Exception) {
+                println(e)
+                req.response()
+                    .setStatusCode(StatusCode.INTERNAL_SERVER_ERROR)
+                    .end(Messages.ERROR)
             }
-        } catch (e: Exception) {
-            println(e)
-            req.response()
-                .setStatusCode(StatusCode.INTERNAL_SERVER_ERROR)
-                .end(Messages.ERROR)
+        }
+        else {
+            req.response().setStatusCode(429).end(Messages.TOO_MANY_REQUESTS)
         }
     }
 
-    override fun start() {
+    private fun getClientIp(req: HttpServerRequest) : String? {
+        if(AppConfig.security.proxy.enabled) {
+            return req.headers().get(AppConfig.security.proxy.realIpHeader).split(",").firstOrNull()?.trim()
+        }
+        return req.remoteAddress().hostAddress()
+    }
 
+    override fun start() {
         vertx.createHttpServer().requestHandler { req ->
-            val ipAddress = req.remoteAddress().hostAddress()
-            println(req.remoteAddress().host())
-            if (RateLimiter.isAllowed(ipAddress)) {
-                if (AppConfig.security.accessControl.whiteList.enabled) {
-                    if (AppConfig.security.accessControl.whiteList.list.contains(ipAddress)) {
-                        handle(req)
-                    } else {
-                        req.response()
-                            .setStatusCode(StatusCode.FORBIDDEN)
-                            .putHeader("content-type", "text/plain; charset=UTF-8")
-                            .end(Messages.WHITE_LIST_ONLY)
-                    }
-                } else if (AppConfig.security.accessControl.blackList.enabled) {
-                    if (AppConfig.security.accessControl.blackList.list.contains(ipAddress)) {
-                        req.response()
-                            .setStatusCode(StatusCode.FORBIDDEN)
-                            .putHeader("content-type", "text/plain; charset=UTF-8")
-                            .end(AppConfig.security.accessControl.blackList.blockMessage)
-                    } else {
-                        handle(req)
-                    }
-                } else {
+            val ipAddress = getClientIp(req)
+            if(ipAddress == null || (AppConfig.security.accessControl.allowedHosts.enabled && !AppConfig.security.accessControl.allowedHosts.list.contains(ipAddress))) {
+                req.response()
+                    .setStatusCode(StatusCode.FORBIDDEN)
+                    .putHeader("content-type", "text/plain; charset=UTF-8")
+                    .end(Messages.FORBIDDEN_HOST)
+                return@requestHandler
+            }
+            if(AppConfig.security.accessControl.whitelist.enabled) {
+                if(AppConfig.security.accessControl.whitelist.list.contains(ipAddress)) {
                     handle(req)
                 }
-            } else {
-                req.response().setStatusCode(429).end(Messages.TOO_MANY_REQUESTS)
+                else {
+                    req.response()
+                        .setStatusCode(StatusCode.FORBIDDEN)
+                        .putHeader("content-type", "text/plain; charset=UTF-8")
+                        .end(Messages.WHITE_LIST_ONLY)
+                }
+                return@requestHandler
             }
+            if(AppConfig.security.accessControl.blacklist.enabled && AppConfig.security.accessControl.blacklist.list.contains(ipAddress)) {
+                req.response()
+                    .setStatusCode(StatusCode.FORBIDDEN)
+                    .putHeader("content-type", "text/plain; charset=UTF-8")
+                    .end(AppConfig.security.accessControl.blacklist.blockMessage)
+                return@requestHandler
+            }
+            handle(req)
         }.listen(AppConfig.port)
     }
 }
