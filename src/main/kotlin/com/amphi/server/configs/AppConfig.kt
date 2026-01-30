@@ -31,7 +31,7 @@ object AppConfig {
                         ProxyConfig(
                             enabled = config["enabled"] as Boolean,
                             realIpHeader = config["real-ip-header"] as String,
-                            trustedProxies = config["trusted-proxies"] as List<String>
+                            trustedProxies = (config["trusted-proxies"] as List<String>).toSet()
                         )
                     },
                     rateLimit = (it["rate-limit"] as Map<*, *>).let { config ->
@@ -48,22 +48,22 @@ object AppConfig {
                                 val list = hosts["list"] as List<*>
                                 AllowedHostsConfig(
                                     enabled = hosts["enabled"] as Boolean,
-                                    list = list as List<String>
+                                    list = (list as List<String>).toSet()
                                 )
                             },
-                            blackList = (config["black-list"] as Map<*, *>).let { black ->
+                            blacklist = (config["blacklist"] as Map<*, *>).let { black ->
                                 val list = black["list"] as List<*>
-                                BlackListConfig(
+                                BlacklistConfig(
                                     enabled = black["enabled"] as Boolean,
-                                    list = list as List<String>,
+                                    list = (list as List<String>).toSet(),
                                     blockMessage = black["block-message"] as String
                                 )
                             },
-                            whiteList = (config["white-list"] as Map<*, *>).let { white ->
+                            whitelist = (config["whitelist"] as Map<*, *>).let { white ->
                                 val list = white["list"] as List<*>
-                                WhiteListConfig(
+                                WhitelistConfig(
                                     enabled = white["enabled"] as Boolean,
-                                    list = list as List<String>
+                                    list = (list as List<String>).toSet()
                                 )
                             }
                         )
@@ -112,7 +112,7 @@ data class SecurityConfig(
 data class ProxyConfig(
     val enabled: Boolean,
     val realIpHeader: String,
-    val trustedProxies: List<String>
+    val trustedProxies: Set<String>
 )
 
 data class RateLimitConfig(
@@ -124,24 +124,24 @@ data class RateLimitConfig(
 
 data class AccessControlConfig(
     val allowedHosts: AllowedHostsConfig,
-    val blackList: BlackListConfig,
-    val whiteList: WhiteListConfig
+    val blacklist: BlacklistConfig,
+    val whitelist: WhitelistConfig
 )
 
 data class AllowedHostsConfig(
     val enabled: Boolean,
-    val list: List<String>
+    val list: Set<String>
 )
 
-data class BlackListConfig(
+data class BlacklistConfig(
     val enabled: Boolean,
-    val list: List<String>,
+    val list: Set<String>,
     val blockMessage: String
 )
 
-data class WhiteListConfig(
+data class WhitelistConfig(
     val enabled: Boolean,
-    val list: List<String>
+    val list: Set<String>
 )
 
 data class MediaConfig(
