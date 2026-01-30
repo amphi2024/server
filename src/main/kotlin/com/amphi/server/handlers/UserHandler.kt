@@ -1,20 +1,12 @@
 package com.amphi.server.handlers
 
-import com.amphi.server.common.Messages
+import com.amphi.server.common.*
 import com.amphi.server.configs.AppConfig
-import com.amphi.server.common.StatusCode
-import com.amphi.server.common.sendAuthFailed
-import com.amphi.server.common.sendSuccess
-import com.amphi.server.common.handleAuthorization
-import com.amphi.server.configs.SQLITE
 import com.amphi.server.eventService
-import com.amphi.server.services.user.UserPostgresService
-import com.amphi.server.services.user.UserSqliteService
+import com.amphi.server.userService
 import io.vertx.core.http.HttpServerRequest
 
 object UserHandler {
-
-    private val userService = if(AppConfig.database.type == SQLITE) UserSqliteService() else UserPostgresService()
 
     fun register(req: HttpServerRequest) {
         req.bodyHandler { buffer ->
@@ -144,6 +136,8 @@ object UserHandler {
     }
 
     fun getUserIds(req: HttpServerRequest) {
-        req.response().putHeader("content-type", "application/json; charset=UTF-8").end(userService.getUserIds().encode())
+        req.response().putHeader("content-type", "application/json; charset=UTF-8").end("[${userService.getUserIds().joinToString {
+            "\"$it\""
+        }}]")
     }
 }

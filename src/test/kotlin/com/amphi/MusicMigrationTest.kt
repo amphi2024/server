@@ -1,5 +1,6 @@
 package com.amphi
 
+import com.amphi.server.configs.AppConfig
 import com.amphi.server.trashService
 import com.amphi.server.utils.migration.migrateMusic
 import io.vertx.core.json.JsonArray
@@ -16,7 +17,7 @@ class MusicMigrationTest {
     @Test
     fun `should migrate music correctly in version 3_0_0`() {
 
-        val userDir = File("users/user1")
+        val userDir = File("${AppConfig.storage.data}/user1")
 
         try {
             val musicDir = File(userDir, "music")
@@ -31,12 +32,12 @@ class MusicMigrationTest {
 
             createSampleMusicData(songsDir = songsDir, albumsDir = albumsDir, artistsDir = artistsDir, playlistsDir = playlistsDir)
 
-            migrateMusic(userDir)
+            migrateMusic("user1", userDir)
 
         } finally {
             userDir.deleteRecursively()
             trashService.getTrashLogs().forEach { trashLog ->
-                if(trashLog.path.startsWith("users/user1")) {
+                if(trashLog.path.startsWith("${AppConfig.storage.data}/user1")) {
                     trashService.deleteTrashLog(trashLog.path)
                 }
             }

@@ -1,5 +1,6 @@
 package com.amphi.server.models.photos
 
+import com.amphi.server.configs.AppConfig
 import com.amphi.server.utils.setNullable
 import java.sql.DriverManager
 import java.sql.PreparedStatement
@@ -9,7 +10,7 @@ import java.time.Instant
 
 class PhotosDatabase(val userId: String) {
 
-    private val connection = DriverManager.getConnection("jdbc:sqlite:users/${userId}/photos/photos.db")
+    private val connection = DriverManager.getConnection("jdbc:sqlite:${AppConfig.storage.data}/${userId}/photos/photos.db")
 
     fun close() {
         connection.close()

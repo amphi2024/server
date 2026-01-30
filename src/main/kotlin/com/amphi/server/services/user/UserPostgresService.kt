@@ -4,7 +4,7 @@ import com.amphi.server.configs.ServerPostgresDatabase.connection
 import io.vertx.core.json.JsonArray
 
 class UserPostgresService : UserService {
-  override fun getUserIds(): JsonArray {
+  override fun getUserIds(): Set<String> {
       TODO("Not yet implemented")
   }
 

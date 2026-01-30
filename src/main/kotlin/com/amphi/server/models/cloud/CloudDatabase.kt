@@ -1,5 +1,6 @@
 package com.amphi.server.models.cloud
 
+import com.amphi.server.configs.AppConfig
 import com.amphi.server.models.FileModel
 import java.sql.DriverManager
 import java.sql.ResultSet
@@ -8,7 +9,7 @@ import kotlin.random.Random
 
 class CloudDatabase(val userId: String) {
     private val connection =
-        DriverManager.getConnection("jdbc:sqlite:users/${userId}/cloud/cloud.db")
+        DriverManager.getConnection("jdbc:sqlite:${AppConfig.storage.data}/${userId}/cloud/cloud.db")
 
     fun close() {
         connection.close()

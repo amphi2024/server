@@ -1,5 +1,6 @@
 package com.amphi.server.utils
 
+import com.amphi.server.configs.AppConfig
 import com.amphi.server.models.cloud.CloudDatabase
 import com.amphi.server.models.notes.Note
 import com.amphi.server.models.TrashLog
@@ -32,17 +33,14 @@ fun deleteObsoleteFilesInTrash(trash: File, trashLogs: List<TrashLog>) {
     }
 }
 
-fun deleteObsoleteCloudFiles(userDirectory: File) {
-    val cloudDBFile = File("users/${userDirectory.name}/cloud/cloud.db")
-    if (cloudDBFile.exists()) {
-        val database = CloudDatabase(userDirectory.name)
-        database.permanentlyDeleteObsoleteFiles()
-        database.close()
-    }
+fun deleteObsoleteCloudFiles(userId: String) {
+    val database = CloudDatabase(userId)
+    database.permanentlyDeleteObsoleteFiles()
+    database.close()
 }
 
 fun deleteObsoleteAttachments(noteList: List<Note>, userId: String) {
-    val directory = File("users/$userId/notes/attachments")
+    val directory = File(AppConfig.storage.data,"$userId/notes/attachments")
     val notes = mutableMapOf<String, Note>()
     noteList.forEach { note ->
         notes[note.id] = note
@@ -58,19 +56,18 @@ fun deleteObsoleteAttachments(noteList: List<Note>, userId: String) {
 
                 val note = notes[noteId]
 
-                if(note == null) {
+                if (note == null) {
                     moveToTrash(
                         userId = userId,
                         path = "notes/attachments/${sub1.name}/${sub2.name}",
                         filename = noteId
                     )
-                }
-                else {
+                } else {
                     note.content.list.forEach { item ->
-                        if(item is LinkedHashMap<*, *>) {
+                        if (item is LinkedHashMap<*, *>) {
                             val value = item["value"]
-                            if(value is String) {
-                                when(item["type"]) {
+                            if (value is String) {
+                                when (item["type"]) {
                                     "img" -> images.add(value)
                                     "video" -> videos.add(value)
                                     "audio" -> audio.add(value)

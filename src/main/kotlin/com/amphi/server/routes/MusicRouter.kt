@@ -14,6 +14,7 @@ object MusicRouter {
     fun route(req: HttpServerRequest) {
 
         val split = req.path().split("/")
+        println(split.size)
         when (split.size) {
             6 -> { //    ex: /music/songs/{song1}/files/{file.mp3}
                 when(req.method().name().uppercase()) {

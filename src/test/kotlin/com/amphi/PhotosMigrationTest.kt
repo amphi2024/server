@@ -1,5 +1,6 @@
 package com.amphi
 
+import com.amphi.server.configs.AppConfig
 import com.amphi.server.trashService
 import com.amphi.server.utils.migration.migratePhotos
 import io.vertx.core.json.JsonArray
@@ -12,7 +13,7 @@ class PhotosMigrationTest {
 
     @Test
     fun `should migrate photos correctly in version 3_0_0`() {
-        val userDir = File("users/user1")
+        val userDir = File("${AppConfig.storage.data}/user1")
 
         try {
             val photosDir = File(userDir, "photos")
@@ -22,12 +23,12 @@ class PhotosMigrationTest {
             albumsDir.mkdirs()
 
             createSampleData(libraryDir, albumsDir)
-            migratePhotos(userDir)
+            migratePhotos("user1", userDir)
 
         } finally {
             userDir.deleteRecursively()
             trashService.getTrashLogs().forEach { trashLog ->
-                if(trashLog.path.startsWith("users/user1")) {
+                if(trashLog.path.startsWith("${AppConfig.storage.data}/user1")) {
                     trashService.deleteTrashLog(trashLog.path)
                 }
             }

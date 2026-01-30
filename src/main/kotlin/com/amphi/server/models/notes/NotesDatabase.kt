@@ -1,5 +1,6 @@
 package com.amphi.server.models.notes
 
+import com.amphi.server.configs.AppConfig
 import com.amphi.server.utils.setNullable
 import io.vertx.core.json.JsonObject
 import java.sql.DriverManager
@@ -10,7 +11,7 @@ import java.time.Instant
 
 class NotesDatabase(val userId: String) {
 
-    private val connection = DriverManager.getConnection("jdbc:sqlite:users/${userId}/notes/notes.db")
+    private val connection = DriverManager.getConnection("jdbc:sqlite:${AppConfig.storage.data}/${userId}/notes/notes.db")
 
     fun close() {
         connection.close()

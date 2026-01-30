@@ -1,28 +1,33 @@
 package com.amphi.server.handlers
 
-import com.amphi.server.common.sendFileNotExists
-import com.amphi.server.common.sendSuccess
-import com.amphi.server.common.sendUploadFailed
-import com.amphi.server.utils.contentTypeByExtension
-import com.amphi.server.common.handleAuthorization
-import com.amphi.server.common.sendBadRequest
-import com.amphi.server.common.sendNotFound
+import com.amphi.server.common.*
+import com.amphi.server.configs.AppConfig
 import com.amphi.server.eventService
+import com.amphi.server.models.Token
 import com.amphi.server.models.notes.Note
 import com.amphi.server.models.notes.NotesDatabase
 import com.amphi.server.models.notes.NotesTheme
 import com.amphi.server.models.notes.NotesThemeColors
-import com.amphi.server.trashService
+import com.amphi.server.utils.contentTypeByExtension
 import com.amphi.server.utils.moveToTrash
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.nio.file.StandardCopyOption
 
 object NotesHandler {
+
+    private fun attachmentDirectory(token: Token, id: String, directoryName: String) : File {
+        val directory = File("${AppConfig.storage.data}/${token.userId}/notes/attachments/${id[0]}/${id[1]}/$id/${directoryName}")
+        if(!directory.canonicalPath.startsWith(AppConfig.storage.data)) {
+            throw SecurityException()
+        }
+        if (!directory.exists()) {
+            directory.mkdirs()
+        }
+
+        return directory
+    }
 
     fun getNotes(req: HttpServerRequest) {
         handleAuthorization(req) { token ->
@@ -121,10 +126,7 @@ object NotesHandler {
         val id = split[2]
         handleAuthorization(req) { token ->
             val jsonArray = JsonArray()
-            val directory = File("users/${token.userId}/notes/attachments/${id[0]}/${id[1]}/$id/${directoryName}")
-            if (!directory.exists()) {
-                directory.mkdirs()
-            }
+            val directory = attachmentDirectory(token, id, directoryName)
             val files = directory.listFiles()
             if (files != null) {
                 for (file in files) {
@@ -146,11 +148,7 @@ object NotesHandler {
         handleAuthorization(req) {token ->
             req.isExpectMultipart = true
             req.uploadHandler { upload ->
-                val directory = File("users/${token.userId}/notes/attachments/${id[0]}/${id[1]}/$id/${directoryName}")
-                if (!directory.exists()) {
-                    directory.mkdirs()
-                }
-
+                val directory = attachmentDirectory(token, id, directoryName)
                 upload.streamToFileSystem("${directory.path}/${filename}").onComplete { ar ->
                     if (ar.succeeded()) {
                         sendSuccess(req)
@@ -169,12 +167,11 @@ object NotesHandler {
         val id = split[2]
         val filename = split[4]
         handleAuthorization(req) { token ->
-            val filePath = "users/${token.userId}/notes/attachments/${id[0]}/${id[1]}/${id}/${directoryName}/${filename}"
-            val file = File(filePath)
+            val file = File(attachmentDirectory(token, id, directoryName), filename)
             if (!file.exists()) {
                 sendFileNotExists(req)
             } else {
-                req.response().putHeader("content-type", contentTypeByExtension(file.extension)).sendFile(filePath)
+                req.response().putHeader("content-type", contentTypeByExtension(file.extension)).sendFile(file.path)
             }
         }
     }
@@ -183,7 +180,7 @@ object NotesHandler {
         val id = split[2]
         val filename = split[4]
         handleAuthorization(req) { token ->
-            val file = File("users/${token.userId}/notes/attachments/${id[0]}/${id[1]}/${id}/${directoryName}/${filename}")
+            val file = File(attachmentDirectory(token, id, directoryName), filename)
             if (file.exists()) {
                 moveToTrash(
                     userId = token.userId,

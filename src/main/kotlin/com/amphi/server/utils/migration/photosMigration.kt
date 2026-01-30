@@ -6,8 +6,7 @@ import com.amphi.server.models.photos.PhotosDatabase
 import com.amphi.server.utils.moveToTrash
 import java.io.File
 
-fun migratePhotos(userDirectory: File) {
-    val userId = userDirectory.name
+fun migratePhotos(userId: String, userDirectory: File) {
     val albumsDirectory = File("${userDirectory.path}/photos/albums")
 
     if(!albumsDirectory.exists()) {

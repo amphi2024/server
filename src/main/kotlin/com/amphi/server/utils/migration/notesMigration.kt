@@ -9,12 +9,11 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 
-fun migrateNotes(userDirectory: File) {
+fun migrateNotes(userId: String, userDirectory: File) {
     moveThemesInOldVersion(userDirectory)
     moveColorsInOldVersion(userDirectory)
 
-    val notesDirectory = File("${userDirectory.path}/notes/notes")
-    val userId = userDirectory.name
+    val notesDirectory = File(userDirectory,"notes/notes")
 
     if(notesDirectory.listFiles()?.isEmpty() == true) {
         notesDirectory.delete()
@@ -45,8 +44,7 @@ fun migrateNotes(userDirectory: File) {
 }
 
 private fun migrateThemes(userDirectory: File, database: NotesDatabase) {
-    val themesDirectory = File("${userDirectory.path}/notes/themes")
-    val userId = userDirectory.name
+    val themesDirectory = File(userDirectory,"notes/themes")
 
     if(themesDirectory.listFiles()?.isEmpty() == true) {
         themesDirectory.delete()
@@ -56,7 +54,7 @@ private fun migrateThemes(userDirectory: File, database: NotesDatabase) {
         return
     }
 
-    val targetDirectory = File("users/${userId}/trash/notes/themes")
+    val targetDirectory = File(userDirectory, "trash/notes/themes")
     if(!targetDirectory.exists()) {
         targetDirectory.mkdirs()
     }
@@ -84,14 +82,14 @@ private fun migrateThemes(userDirectory: File, database: NotesDatabase) {
 }
 
 private fun moveThemesInOldVersion(userDirectory: File) {
-    val themesInOldVersion = File("users/${userDirectory.name}/notes/notes/themes")
+    val themesInOldVersion = File(userDirectory, "notes/notes/themes")
     if (themesInOldVersion.exists()) {
-        val themesDir = File("users/${userDirectory.name}/notes/themes")
+        val themesDir = File(userDirectory,"notes/themes")
         if (!themesDir.exists()) {
             themesInOldVersion.renameTo(themesDir)
         } else if (themesDir.isDirectory) {
             themesInOldVersion.listFiles()?.forEach { themeFile ->
-                themeFile.renameTo(File("users/${userDirectory.name}/notes/themes/${themeFile.name}"))
+                themeFile.renameTo(File(userDirectory,"notes/themes/${themeFile.name}"))
             }
             themesInOldVersion.delete()
         } else if (themesDir.isFile) {
@@ -101,9 +99,9 @@ private fun moveThemesInOldVersion(userDirectory: File) {
 }
 
 private fun moveColorsInOldVersion(userDirectory: File) {
-    val colorsInOldVersion = File("users/${userDirectory.name}/notes/notes/colors")
+    val colorsInOldVersion = File(userDirectory, "notes/notes/colors")
     if (colorsInOldVersion.exists()) {
-        val colorsFile = File("users/${userDirectory.name}/notes/colors")
+        val colorsFile = File(userDirectory,"notes/colors")
         if (!colorsFile.exists()) {
             colorsInOldVersion.renameTo(colorsFile)
         } else {

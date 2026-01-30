@@ -1,9 +1,7 @@
 package com.amphi.server.services.user
 
-import io.vertx.core.json.JsonArray
-
 interface UserService {
-  fun getUserIds(): JsonArray
+  fun getUserIds(): Set<String>
   fun logout(token: String)
   fun login(id: String, deviceName: String, password: String, onAuthenticated: (Boolean, String?, String?) -> Unit)
   fun generatedToken() : String

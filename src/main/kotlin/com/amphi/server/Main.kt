@@ -22,6 +22,8 @@ import com.amphi.server.models.notes.NotesDatabase
 import com.amphi.server.models.photos.PhotosDatabase
 import com.amphi.server.routes.CloudRouter
 import com.amphi.server.routes.PhotosRouter
+import com.amphi.server.services.user.UserPostgresService
+import com.amphi.server.services.user.UserSqliteService
 import com.amphi.server.utils.RateLimiter
 import com.amphi.server.utils.deleteObsoleteCloudFiles
 import com.amphi.server.utils.deleteObsoleteFilesInTrash
@@ -43,12 +45,14 @@ val authorizationService =
     if (AppConfig.database.type == SQLITE) AuthorizationSqliteService() else AuthorizationPostgresService()
 val eventService = if (AppConfig.database.type == SQLITE) EventSqliteService() else EventPostgresService()
 val trashService = if (AppConfig.database.type == SQLITE) TrashSqliteService() else TrashPostgresService()
+val userService = if(AppConfig.database.type == SQLITE) UserSqliteService() else UserPostgresService()
 
 class App : AbstractVerticle(), Handler<HttpServerRequest> {
 
     override fun handle(req: HttpServerRequest) {
         try {
             val path = req.path()
+            println(path)
             when {
                 path == "/" -> {
                     req.response().putHeader("content-type", "text/plain").end("Server is running. Let's go!")
@@ -126,49 +130,63 @@ fun main() {
 
             authorizationService.syncTokensLastAccess()
             authorizationService.deleteObsoleteTokens()
-            val users = File("users")
+            val data = File(AppConfig.storage.data)
             val trashLogs = trashService.getTrashLogs()
-            if (users.exists()) {
-                users.listFiles()?.forEach { userDirectory ->
-                    val oldTrash = File("${userDirectory.path}/trashes")
+            if(!data.exists()) {
+                data.mkdirs()
+            }
+            userService.getUserIds().forEach { userId ->
+                val userDirectory = File(data, userId)
+                if(!userDirectory.exists()) {
+                    userDirectory.mkdirs()
+                }
+                val oldTrash = File(userDirectory, "trashes")
 
-                    if (oldTrash.exists() && oldTrash.listFiles().isNullOrEmpty()) {
-                        oldTrash.delete()
+                if (oldTrash.exists() && oldTrash.listFiles().isNullOrEmpty()) {
+                    oldTrash.delete()
+                }
+
+                val trash = File(userDirectory, "trash")
+                deleteObsoleteFilesInTrash(trash, trashLogs)
+
+                migrateNotes(userId, userDirectory)
+                migrateMusic(userId, userDirectory)
+                migratePhotos(userId, userDirectory)
+
+                File(userDirectory, "notes").let {
+                    if (!it.exists()) {
+                        it.mkdirs()
                     }
+                    val database = NotesDatabase(userId)
+                    database.deleteObsoleteNotes()
+                    val notes = database.getNotes()
+                    deleteObsoleteAttachments(notes, userId)
+                    database.close()
+                }
 
-                    deleteObsoleteCloudFiles(userDirectory)
-
-                    val userId = userDirectory.name
-
-                    val trash = File("users/$userId/trash")
-                    deleteObsoleteFilesInTrash(trash, trashLogs)
-
-                    migrateNotes(userDirectory)
-                    migrateMusic(userDirectory)
-                    migratePhotos(userDirectory)
-
-                    val notesDBFile = File("users/$userId/notes/notes.db")
-                    if (notesDBFile.exists()) {
-                        val database = NotesDatabase(userId)
-                        database.deleteObsoleteNotes()
-                        val notes = database.getNotes()
-                        deleteObsoleteAttachments(notes, userId)
-                        database.close()
+                File(userDirectory, "music").let {
+                    if (!it.exists()) {
+                        it.mkdirs()
                     }
+                    val database = MusicDatabase(userId)
+                    database.deleteObsoleteItems()
+                    database.close()
+                }
 
-                    val musicDBFile = File("users/$userId/music/music.db")
-                    if (musicDBFile.exists()) {
-                        val database = MusicDatabase(userId)
-                        database.deleteObsoleteItems()
-                        database.close()
+                File(userDirectory, "photos").let {
+                    if (!it.exists()) {
+                        it.mkdirs()
                     }
+                    val database = PhotosDatabase(userId)
+                    database.deleteObsoleteItems()
+                    database.close()
+                }
 
-                    val photosDBFile = File("users/$userId/photos/photos.db")
-                    if (photosDBFile.exists()) {
-                        val database = PhotosDatabase(userId)
-                        database.deleteObsoleteItems()
-                        database.close()
+                File(userDirectory, "cloud").let {
+                    if (!it.exists()) {
+                        it.mkdirs()
                     }
+                    deleteObsoleteCloudFiles(userId)
                 }
             }
         } catch (e: Exception) {

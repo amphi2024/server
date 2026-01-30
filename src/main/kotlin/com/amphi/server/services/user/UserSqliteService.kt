@@ -13,18 +13,18 @@ import java.time.Instant
 
 class UserSqliteService : UserService {
 
-  override fun getUserIds(): JsonArray {
-    val jsonArray = JsonArray()
+  override fun getUserIds(): Set<String> {
+      val ids = mutableListOf<String>()
     val statement = connection.createStatement()
     val resultSet: ResultSet = statement.executeQuery("SELECT id From users")
     while (resultSet.next()) {
-      jsonArray.add(resultSet.getString("id"))
+        ids.add(resultSet.getString("id"))
     }
 
     resultSet.close()
     statement.close()
 
-    return jsonArray
+    return ids.toSet()
   }
 
   override fun logout(token: String) {

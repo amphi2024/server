@@ -8,8 +8,7 @@ import com.amphi.server.models.music.Song
 import com.amphi.server.utils.moveToTrash
 import java.io.File
 
-fun migrateMusic(userDirectory: File) {
-    val userId = userDirectory.name
+fun migrateMusic(userId: String, userDirectory: File) {
     val songsDirectory = File("${userDirectory.path}/music/songs")
     if(!songsDirectory.exists()) {
         return

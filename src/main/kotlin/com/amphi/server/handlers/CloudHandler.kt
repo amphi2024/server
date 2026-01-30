@@ -21,25 +21,22 @@ import java.io.File
 
 object CloudHandler {
 
-    fun fileDirectoryPathById(userId: String, id: String): String {
-        return "users/$userId/cloud/files/${id[0]}/${id[1]}/${id[2]}/$id"
-    }
-
     private fun fileDirectoryById(userId: String, id: String): File {
-        return File(fileDirectoryPathById(userId, id))
+        val directory = File("${AppConfig.storage.data}/$userId/cloud/files/${id[0]}/${id[1]}/${id[2]}/$id")
+        if(!directory.canonicalPath.startsWith(AppConfig.storage.data)) {
+            throw SecurityException()
+        }
+
+        return directory
     }
 
     fun createFile(req: HttpServerRequest) {
         handleAuthorization(req) {token ->
             req.bodyHandler { buffer ->
-                val cloudDirectory = File("users/${token.userId}/cloud")
-                if(!cloudDirectory.exists()) {
-                    cloudDirectory.mkdirs()
-                }
                 val database = CloudDatabase(token.userId)
                 val id = database.generateUniqueFileId()
-                val directoryPath = fileDirectoryPathById(token.userId, id)
-                val file = File("$directoryPath/1")
+                val directory = fileDirectoryById(token.userId, id)
+                val file = File("${directory.path}/1")
                 file.mkdirs()
 
                 try {
@@ -151,7 +148,6 @@ object CloudHandler {
         val id = split[3]
         val version = 1
         handleAuthorization(req) {token ->
-            val directoryPath = fileDirectoryPathById(token.userId, id)
             val database = CloudDatabase(token.userId)
             val fileModel = database.getLatestFileModelById(id)
             database.close()
@@ -160,7 +156,7 @@ object CloudHandler {
             } else {
                 val fileExtension = getFileExtension(fileModel.name)
                 val filename = if (fileExtension.isEmpty()) "file" else "file.${fileExtension}"
-                val file = File("$directoryPath/$version/${filename}")
+                val file = File("${fileDirectoryById(token.userId, id)}/$version/${filename}")
                 if (file.exists()) {
                     val contentType = contentTypeByExtension(file.extension)
                     req.response().putHeader("content-type", contentType).sendFile(file.path)

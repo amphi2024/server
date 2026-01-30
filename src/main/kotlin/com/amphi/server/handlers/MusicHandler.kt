@@ -6,7 +6,9 @@ import com.amphi.server.common.sendNotFound
 import com.amphi.server.common.sendSuccess
 import com.amphi.server.common.sendUploadFailed
 import com.amphi.server.common.handleAuthorization
+import com.amphi.server.common.sendAuthFailed
 import com.amphi.server.common.sendBadRequest
+import com.amphi.server.configs.AppConfig
 import com.amphi.server.eventService
 import com.amphi.server.models.music.Album
 import com.amphi.server.models.music.Artist
@@ -28,7 +30,11 @@ import java.io.File
 
 object MusicHandler {
     private fun itemDirectory(token: Token, id: String, directoryName: String) : File {
-        val directory = File("users/${token.userId}/music/media/${directoryName}/${id[0]}/${id[1]}/$id")
+        val directory = File("${AppConfig.storage.data}/${token.userId}/music/media/${directoryName}/${id[0]}/${id[1]}/$id")
+        print(directory.canonicalPath)
+        if(!directory.canonicalPath.startsWith(AppConfig.storage.data)) {
+            throw SecurityException()
+        }
         if (!directory.exists()) {
             directory.mkdirs()
         }
@@ -283,12 +289,15 @@ object MusicHandler {
         val filename = split[5]
 
         handleAuthorization(req) { token ->
-            val filePath = "users/${token.userId}/music/media/${directoryName}/${id[0]}/${id[1]}/${id}/${filename}"
-            val file = File(filePath)
+            val file = File(itemDirectory(token, id, directoryName), filename)
             if (!file.exists()) {
                 sendFileNotExists(req)
-            } else {
-                req.response().putHeader("content-type", contentTypeByExtension(file.extension)).sendFile(filePath)
+            }
+            else if(!file.canonicalPath.startsWith(AppConfig.storage.data)) {
+                sendAuthFailed(req)
+            }
+            else {
+                req.response().putHeader("content-type", contentTypeByExtension(file.extension)).sendFile(file.path)
             }
         }
     }

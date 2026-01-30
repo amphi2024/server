@@ -103,7 +103,7 @@ object PhotosHandler {
     }
 
     private fun photoDirectoryPathById(userId: String, id: String): String {
-        return "users/${userId}/photos/library/${id[0]}/${id[1]}/$id"
+        return "${AppConfig.storage.data}/${userId}/photos/library/${id[0]}/${id[1]}/$id"
     }
 
     private fun photoDirectoryById(userId: String, id: String): File {
