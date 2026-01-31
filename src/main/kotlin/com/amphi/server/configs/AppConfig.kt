@@ -1,5 +1,6 @@
 package com.amphi.server.configs
 
+import com.amphi.server.utils.generateExampleConfig
 import com.amphi.server.utils.migration.migrateConfig
 import net.mamoe.yamlkt.Yaml
 import java.io.File
@@ -95,7 +96,8 @@ object AppConfig {
         }
         catch(e: Exception) {
             println("Error reading configuration: ${e.message}")
-            println("Please check 'config.example.yaml' for reference.")
+            println("Please copy 'config.example.yaml' to 'config.yaml' and edit it.")
+            generateExampleConfig()
             e.printStackTrace()
             exitProcess(1)
         }
