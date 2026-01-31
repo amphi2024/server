@@ -27,6 +27,8 @@ dependencies {
     implementation("de.mkammerer:argon2-jvm:2.12")
     implementation("io.vertx:vertx-pg-client:5.0.7")
     implementation("net.mamoe.yamlkt:yamlkt:0.13.0")
+    implementation("org.slf4j:slf4j-api:2.0.9")
+    implementation("ch.qos.logback:logback-classic:1.5.26")
 }
 
 java {
