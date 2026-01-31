@@ -91,8 +91,9 @@ class App : AbstractVerticle(), Handler<HttpServerRequest> {
         vertx.createHttpServer().requestHandler { req ->
             val ipAddress = getClientIp(req)
             val path = req.path()
-            if(ipAddress == null || (AppConfig.security.accessControl.allowedHosts.enabled && !AppConfig.security.accessControl.allowedHosts.list.contains(ipAddress))) {
-                logger?.warn("[SECURITY] Invalid Host: IP=$ipAddress, Path=$path")
+            val host = req.headers().get("Host").split(":").firstOrNull()
+            if(host == null || (AppConfig.security.accessControl.allowedHosts.enabled && !AppConfig.security.accessControl.allowedHosts.list.contains(host))) {
+                logger?.warn("[SECURITY] Invalid Host: Host=$host, Path=$path")
                 req.response()
                     .setStatusCode(StatusCode.FORBIDDEN)
                     .putHeader("content-type", "text/plain; charset=UTF-8")
