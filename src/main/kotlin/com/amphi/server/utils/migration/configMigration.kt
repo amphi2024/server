@@ -89,17 +89,17 @@ fun migrateConfig() {
             allowed-hosts:
               enabled: false
               list: []
-            black-list:
+            blacklist:
               enabled: true
-              list: [${blacklist.joinToString { text -> 
-                  "'${text}'"
-                    }}]
+              list: [${blacklist.joinToString { text ->
+        "'${text}'"
+    }}]
               block-message: "$blockMessage"
-            white-list:
+            whitelist:
               enabled: $whitelistOnly
               list: [${whitelist.joinToString { text ->
-                  "'${text}'"
-                    }}]
+        "'${text}'"
+    }}]
         media:
           multi-res-video: $multiResVideo
           generate-thumbnail: $generateMediaThumbnail
