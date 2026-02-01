@@ -1,32 +1,46 @@
-# Server for Amphi Apps
+# Amphi Server
 
-Amphi Apps Server is easy to set up, flexible, and you can run it on any platform.
+[notes]: https://github.com/amphi2024/notes
+[music]: https://github.com/amphi2024/music
+[photos]: https://github.com/amphi2024/photos
+[cloud]: https://github.com/amphi2024/cloud
+
+A simple Minecraft-like self-hosted server for [Amphi Notes][notes], [Music][music], [Photos][photos], and [Cloud][cloud].
+
+![preview](preview.png)
 
 ## Setup
 
-### 1. Download Server
+You can host your server using Java Runtime. If this guide feels complicated, check out our step-by-step [YouTube Tutorial](https://www.youtube.com/@amphi2024).
+
+[//]: # (You can host your server using Java Runtime or Docker. If this guide feels complicated, check out our step-by-step [YouTube Tutorial]&#40;https://www.youtube.com/@amphi2024&#41;.)
+
+[//]: # (### Start with Java)
+
+First, download the server from GitHub Releases.
 
 ```bash
-curl -L https://github.com/amphi2024/server/releases/download/v{LATEST_VERSION}/server-{LATEST_VERSION}.jar -o server.jar
+curl -L https://github.com/amphi2024/server/releases/download/v?.?.?/server-?.?.?.jar -o server.jar
+# Replace ?.?.? with the latest version
 ```
 
-### 2. Download Java Runtime
+Initialize the server:
+```bash
+java -jar server.jar
+```
 
-If you already have Java installed, you can skip this step.
-If not, you can download it from [Adoptium](https://adoptium.net/temurin/releases/?package=jre), [Azul](https://www.azul.com/downloads/?package=jre#zulu), or another provider.
+`config.example.yaml` will be generated. Rename it to `config.yaml` and customize your settings.
 
-### 3. Create a Service File (for Auto Start on Linux)
-
-Create a file at /etc/systemd/system/your-service.service:
+Run as a Linux Service (Systemd): Create a file at `/etc/systemd/system/your-server.service`:
 
 ```ini
 [Unit]
-Description=Amphi Apps Server
+Description=My Server
 After=network.target
 
 [Service]
 Type=simple
-User=<YOUR_USER>
+User=<YOU>
 ExecStart=java -jar /path/to/server/server.jar # or path/to/jre/bin/java -jar /path/to/server/server.jar
 Restart=on-failure
 
@@ -34,44 +48,70 @@ Restart=on-failure
 WantedBy=multi-user.target
 ```
 
-Apply the service:
+Apply and start:
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable amphi-server
-sudo systemctl start amphi-server
+sudo systemctl enable your-server
+sudo systemctl start your-server
 ```
 
-### 4. (Optional) Make it Accessible Remotely
+[//]: # (### Start with Docker)
 
-Advanced users can set up remote access using methods such as:
-- VPN (e.g., Tailscale)
-- Port forwarding
-- Running the server as a system service
+[//]: # (If you want a containerized server. )
 
-Make sure to consider security when enabling remote access.
+[//]: # (First, pull the image.)
+
+[//]: # (```bash)
+
+[//]: # (docker pull amphi/server:latest)
+
+[//]: # (```)
+
+[//]: # (Then, run the server:)
+[//]: # (```bash)
+[//]: # (docker run -d \)
+[//]: # (  -p 8000:8000 \)
+[//]: # (  -v $&#40;pwd&#41;/data:/app/data \)
+[//]: # (  -v $&#40;pwd&#41;/config.yaml:/app/config.yaml \)
+[//]: # (  --name amphi-server \)
+[//]: # (  amphi/server:latest)
+[//]: # (```)
+
+### Final Step
+
+To access your server from outside your network, we recommend the following methods:
+
+- Tailscale
+- Cloudflare Tunnel
+- Ngrok
+- Custom Domain with HTTPS
+
+**WARNING**: Ensure your configuration is secure according to your chosen method. Avoid risky methods like direct port forwarding.
 
 ## Update
 
-### 1. Stop the Service (for Linux)
+You can easily update the server by replacing the JAR file.
+
+[//]: # (### For Java Users)
 
 ```bash
-sudo systemctl stop amphi-server
-```
+# Stop the Service (for Linux)
+sudo systemctl stop your-server
 
-### 2. Rename old server file
-
-```bash
+# Rename the old server file
 mv server.jar server-old.jar
-```
-### 3. Download Server
 
-```bash
-curl -L https://github.com/amphi2024/server/releases/download/v{LATEST_VERSION}/server-{LATEST_VERSION}.jar -o server.jar
+# Download the latest version
+curl -L https://github.com/amphi2024/server/releases/download/v?.?.?/server-?.?.?.jar -o server.jar
+
+# Restart the Service
+sudo systemctl restart your-server
 ```
 
-### 4. Restart Service (for Linux)
+[//]: # (### For Docker Users)
 
-```bash
-sudo systemctl restart amphi-server
-```
+[//]: # (```bash)
+
+[//]: # ()
+[//]: # (```)
