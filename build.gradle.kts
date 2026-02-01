@@ -2,10 +2,10 @@ plugins {
 
     alias(libs.plugins.jvm)
 
-    id("org.jetbrains.kotlin.kapt") version "1.5.20"
+    id("org.jetbrains.kotlin.kapt") version "2.3.0"
 
     application
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 repositories {
@@ -37,7 +37,6 @@ java {
     }
 }
 
-
 application {
     mainClass = "com.amphi.server.MainKt"
 }
@@ -46,7 +45,6 @@ tasks.jar {
     manifest {
         attributes(
             "Main-Class" to "com.amphi.server.MainKt"
-
         )
     }
     archiveFileName.set("server.jar")
