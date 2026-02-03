@@ -40,7 +40,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=<YOU>
+User=YOU
+WorkingDirectory=/path/to/server
 ExecStart=java -jar /path/to/server/server.jar # or path/to/jre/bin/java -jar /path/to/server/server.jar
 Restart=on-failure
 
