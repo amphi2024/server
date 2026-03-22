@@ -1,28 +1,10 @@
 package com.amphi.server.handlers
 
-import com.amphi.server.common.handleAuthorization
-import com.amphi.server.common.sendBadRequest
-import com.amphi.server.common.sendFileNotExists
-import com.amphi.server.common.sendNotFound
-import com.amphi.server.common.sendSuccess
-import com.amphi.server.common.sendUploadFailed
+import com.amphi.server.common.*
 import com.amphi.server.configs.AppConfig
 import com.amphi.server.eventService
-import com.amphi.server.models.photos.Album
-import com.amphi.server.models.photos.Photo
-import com.amphi.server.models.photos.PhotosDatabase
-import com.amphi.server.models.photos.PhotosTheme
-import com.amphi.server.models.photos.PhotosThemeColors
-import com.amphi.server.utils.contentTypeByExtension
-import com.amphi.server.utils.generateImageThumbnail
-import com.amphi.server.utils.generateMultiResVideo
-import com.amphi.server.utils.generateVideoThumbnail
-import com.amphi.server.utils.getNullableInt
-import com.amphi.server.utils.getNullableJsonArray
-import com.amphi.server.utils.getNullableLong
-import com.amphi.server.utils.getNullableString
-import com.amphi.server.utils.isVideoExtension
-import com.amphi.server.utils.moveToTrash
+import com.amphi.server.models.photos.*
+import com.amphi.server.utils.*
 import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.json.JsonArray
 import java.io.File
@@ -175,30 +157,8 @@ object PhotosHandler {
 
                 upload.streamToFileSystem(photoFilePath).onComplete { ar ->
                     if (ar.succeeded()) {
-                        if (isVideoExtension(fileExtension)) {
-                            if (AppConfig.media.generateThumbnail) {
-                                generateVideoThumbnail(
-                                    input = photoFilePath,
-                                    output = "${directory.path}/thumbnail.jpg"
-                                )
-                            }
-                            if (AppConfig.media.multiResVideo) {
-                                val output1080p = "${directory.path}/photo_1080p.$fileExtension"
-                                val output720p = "${directory.path}/photo_720p.$fileExtension"
-                                generateMultiResVideo(
-                                    filepath = photoFilePath,
-                                    outputPath1080p = output1080p,
-                                    outputPath720p = output720p
-                                )
-                            }
-
-                        }
-
                         if (AppConfig.media.generateThumbnail) {
-                            generateImageThumbnail(
-                                input = photoFilePath,
-                                output = "${directory.path}/thumbnail.jpg"
-                            )
+                            generateThumbnail(fileExtension, photoFilePath,"${directory.path}/thumbnail.jpg")
                         }
                         sendSuccess(req)
                     } else {
@@ -236,11 +196,7 @@ object PhotosHandler {
             } else {
                 if (AppConfig.media.generateThumbnail) {
                     photoFileById(directoryPath)?.let { photoFile ->
-                        if (isVideoExtension(photoFile.extension)) {
-                            generateVideoThumbnail(photoFile.path, file.path)
-                        } else {
-                            generateImageThumbnail(photoFile.path, file.path)
-                        }
+                        generateThumbnail(photoFile.extension, photoFile.path, file.path)
                     }
                 }
                 sendNotFound(req)
