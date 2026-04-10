@@ -195,4 +195,25 @@ object CloudHandler {
         }
     }
 
+    fun downloadThumbnail(req: HttpServerRequest, split: List<String>) {
+        val id = split[3]
+        val version = 1
+        handleAuthorization(req) {token ->
+            val database = CloudDatabase(token.userId)
+            val fileModel = database.getLatestFileModelById(id)
+            database.close()
+            if (fileModel == null) {
+                sendNotFound(req)
+            } else {
+                val file = File("${fileDirectoryById(token.userId, id)}/$version/thumbnail.jpg")
+                if (file.exists()) {
+                    val contentType = contentTypeByExtension(file.extension)
+                    req.response().putHeader("content-type", contentType).sendFile(file.path)
+                } else {
+                    sendFileNotExists(req)
+                }
+            }
+        }
+    }
+
 }

@@ -20,6 +20,7 @@ object CloudRouter {
                     "GET" -> {
                         when(split[4]) {
                             "download" -> CloudHandler.downloadFile(req, split)
+                            "thumbnail" -> CloudHandler.downloadThumbnail(req, split)
                             else -> sendNotFound(req)
                         }
 
