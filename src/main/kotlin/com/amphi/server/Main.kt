@@ -34,7 +34,7 @@ import java.io.File
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-const val VERSION = "3.1.1"
+const val VERSION = "3.2.0"
 
 val authorizationService =
     if (AppConfig.database.type == SQLITE) AuthorizationSqliteService() else AuthorizationPostgresService()
