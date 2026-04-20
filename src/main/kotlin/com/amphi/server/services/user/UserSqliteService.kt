@@ -1,173 +1,123 @@
 package com.amphi.server.services.user
 
-import com.amphi.server.authorizationService
-import com.amphi.server.configs.ServerSqliteDatabase.connection
-import com.amphi.server.models.Token
+import com.amphi.server.common.InvalidPasswordException
+import com.amphi.server.common.UnknownUserException
+import com.amphi.server.configs.ServerSqliteDatabase.pool
 import de.mkammerer.argon2.Argon2
 import de.mkammerer.argon2.Argon2Factory
-import io.vertx.core.json.JsonArray
+import io.vertx.core.Future
+import io.vertx.sqlclient.Tuple
 import java.security.SecureRandom
-import java.sql.ResultSet
-import java.sql.SQLException
 import java.time.Instant
 
 class UserSqliteService : UserService {
 
-  override fun getUserIds(): Set<String> {
-      val ids = mutableListOf<String>()
-    val statement = connection.createStatement()
-    val resultSet: ResultSet = statement.executeQuery("SELECT id From users")
-    while (resultSet.next()) {
-        ids.add(resultSet.getString("id"))
+    override fun getUserIds(): Future<Set<String>> {
+        return pool.query("SELECT id FROM users").execute().map {
+            it.map { row ->
+                row.getString("id")
+            }.toSet()
+        }
     }
 
-    resultSet.close()
-    statement.close()
-
-    return ids.toSet()
-  }
-
-  override fun logout(token: String) {
-    val sql = "DELETE FROM tokens WHERE token = ?;"
-    val preparedStatement = connection.prepareStatement(sql)
-    preparedStatement.setString(1, token)
-    preparedStatement.executeUpdate()
-    preparedStatement.close()
-  }
-
-
-  override fun login(id: String, deviceName: String, password: String, onAuthenticated: (Boolean, String?, String?) -> Unit) {
-    val sql = "SELECT name, password FROM users WHERE id = ?;"
-    val statement = connection.prepareStatement(sql)
-
-    statement.setString(1, id)
-
-    val resultSet: ResultSet = statement.executeQuery()
-
-    var authenticated = false
-    var token: String? = null
-    var username: String? = null
-
-    if (resultSet.next()) {
-      val storedHashedPassword = resultSet.getString("password")
-      val argon2: Argon2 = Argon2Factory.create(Argon2Factory.Argon2Types.ARGON2id)
-
-
-      token = generatedToken()
-      username = resultSet.getString("name")
-      val insertQuery = "INSERT INTO tokens (token, last_accessed, user_id, device_name) VALUES (? , ?, ?, ?);"
-      val insertStatement = connection.prepareStatement(insertQuery)
-        val timestamp = Instant.now()
-      insertStatement.setString(1, token)
-      insertStatement.setLong(2, timestamp.toEpochMilli())
-      insertStatement.setString(3, id)
-      insertStatement.setString(4, deviceName)
-      insertStatement.executeUpdate()
-      insertStatement.close()
-      authenticated = argon2.verify(storedHashedPassword, password.toCharArray())
-
-      argon2.wipeArray(password.toCharArray())
-
-        authorizationService.addToken(Token(
-            token = token,
-            lastAccessed = timestamp,
-            userId = id,
-            deviceName = deviceName
-        ))
+    override fun logout(token: String) : Future<Unit> {
+      return pool.preparedQuery("DELETE FROM tokens WHERE token = ?").execute(Tuple.of(token)).mapEmpty()
     }
-    resultSet.close()
-    statement.close()
 
-    onAuthenticated(authenticated, token, username)
-  }
+    override fun login(
+        id: String,
+        deviceName: String,
+        password: String
+    ) : Future<String> {
+      return pool
+          .preparedQuery("SELECT name, password FROM users WHERE id = ?")
+        .execute(Tuple.of(id))
+        .compose { rows ->
+          val row = rows.firstOrNull()
+          if(row != null) {
+            val storedHashedPassword = row.getString("password")
+            val argon2: Argon2 = Argon2Factory.create(Argon2Factory.Argon2Types.ARGON2id)
 
-  override fun generatedToken(): String {
-    val random = SecureRandom()
-    val characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-    val stringBuilder = StringBuilder(50)
-    for (i in 0 until 50) {
-      val randomIndex = random.nextInt(characters.length)
-      stringBuilder.append(characters[randomIndex])
-    }
-    val string = stringBuilder.toString()
-    var exists = false
-
-    for(token in authorizationService.getTokens()) {
-      if(string == token.token) {
-        exists = true
-        break
+              val authenticated = argon2.verify(storedHashedPassword, password.toCharArray())
+              argon2.wipeArray(password.toCharArray())
+              if(authenticated) {
+                  val tokenValue = generatedToken().await()
+                  val timestamp = Instant.now()
+                  pool.preparedQuery("INSERT INTO tokens (token, last_accessed, user_id, device_name) VALUES(?, ?, ?, ?)")
+                      .execute(Tuple.of(tokenValue, timestamp.toEpochMilli(), id, deviceName))
+                      .map {
+                          tokenValue
+                      }
+              }
+              else {
+                  Future.failedFuture(InvalidPasswordException())
+              }
+          }
+          else {
+            Future.failedFuture(UnknownUserException())
+          }
       }
     }
-    return if(exists) {
-      generatedToken()
-    } else string
-  }
 
-  override fun register(id: String, name: String, password: String, onFailed: () -> Unit, onSuccess: () -> Unit) {
-    try {
-      val argon2: Argon2 = Argon2Factory.create(Argon2Factory.Argon2Types.ARGON2id)
+    override fun generatedToken(): Future<String> {
+        val random = SecureRandom()
+        val characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+        val stringBuilder = StringBuilder(50)
 
-      val hashedPassword = argon2.hash(12, 65536, 4, password.toCharArray())
+        (0 until 50).forEach { _ ->
+            val randomIndex = random.nextInt(characters.length)
+            stringBuilder.append(characters[randomIndex])
+        }
 
-      val sql = "INSERT INTO users (id, name, password) VALUES ( ? , ? , ?);"
-      val preparedStatement = connection.prepareStatement(sql)
+        val token = stringBuilder.toString()
 
-      preparedStatement.setString(1, id)
-      preparedStatement.setString(2, name)
-      preparedStatement.setString(3, hashedPassword)
-      preparedStatement.executeUpdate()
-      preparedStatement.close()
-      argon2.wipeArray(password.toCharArray())
-      onSuccess()
-    } catch (_: SQLException) {
-      onFailed()
-    }
-  }
-
-  override fun changePassword(
-    oldPassword: String,
-    password: String,
-    id: String,
-    onAuthenticationFailed: () -> Unit,
-    onSuccess: () -> Unit
-  ) {
-    val sql = "SELECT password FROM users WHERE id = ?;"
-    val statement = connection.prepareStatement(sql)
-    statement.setString(1, id)
-    val resultSet: ResultSet = statement.executeQuery()
-    var authenticated = false
-    val argon2 = Argon2Factory.create(Argon2Factory.Argon2Types.ARGON2id)
-    if(resultSet.next()) {
-      val hashedPassword = resultSet.getString("password")
-      authenticated = argon2.verify(hashedPassword, oldPassword.toCharArray())
-      argon2.wipeArray(oldPassword.toCharArray())
+        return pool.preparedQuery("SELECT token FROM tokens WHERE token = ?")
+            .execute(Tuple.of(token))
+            .compose { rows ->
+                if (rows.size() > 0) {
+                    generatedToken()
+                } else {
+                    Future.succeededFuture(token)
+                }
+            }
     }
 
-    statement.close()
-    resultSet.close()
+    override fun register(id: String, name: String, password: String) : Future<Unit> {
+        val argon2: Argon2 = Argon2Factory.create(Argon2Factory.Argon2Types.ARGON2id)
 
-    if(authenticated) {
-      val updateSQL = "UPDATE users SET password = ? WHERE id = ?;"
-      val preparedStatement = connection.prepareStatement(updateSQL)
-      val hashedPassword = argon2.hash(12, 65536, 4, password.toCharArray())
-      preparedStatement.setString(1, hashedPassword)
-      preparedStatement.setString(2, id)
-      preparedStatement.executeUpdate()
-      preparedStatement.close()
-      argon2.wipeArray(password.toCharArray())
-      onSuccess()
-    }
-    else {
-      onAuthenticationFailed()
-    }
-  }
+        val hashedPassword = argon2.hash(12, 65536, 4, password.toCharArray())
+        argon2.wipeArray(password.toCharArray())
 
-  override fun changeUsername(name: String, id: String) {
-    val sql = "UPDATE users SET name = ? WHERE id = ?;"
-    val preparedStatement = connection.prepareStatement(sql)
-    preparedStatement.setString(1, name)
-    preparedStatement.setString(2, id)
-    preparedStatement.executeUpdate()
-    preparedStatement.close()
-  }
+        return pool.preparedQuery("INSERT INTO users (id, name, password) VALUES (?, ?, ?)")
+            .execute(Tuple.of(id, name, hashedPassword))
+            .mapEmpty()
+    }
+
+    override fun changePassword(
+        oldPassword: String,
+        password: String,
+        id: String
+    ) : Future<Unit> {
+        val rows = pool
+            .preparedQuery("SELECT password FROM users WHERE id = ?")
+            .execute(Tuple.of(id))
+            .await()
+        if(!rows.any()) {
+            return Future.failedFuture(NoSuchElementException())
+        }
+
+        val argon2 = Argon2Factory.create(Argon2Factory.Argon2Types.ARGON2id)
+        val hashedPassword = rows.first().getString("password")
+        val isValid = argon2.verify(hashedPassword, oldPassword.toCharArray())
+        argon2.wipeArray(oldPassword.toCharArray())
+        if (!isValid) {
+            return Future.failedFuture(InvalidPasswordException())
+        }
+
+        return pool.preparedQuery("UPDATE users SET password = ? WHERE id = ?").execute(Tuple.of(argon2.hash(12, 65536, 4, password.toCharArray()), id)).mapEmpty()
+    }
+
+    override fun changeUsername(name: String, id: String) : Future<Unit> {
+        return pool.preparedQuery("UPDATE users SET name = ? WHERE id = ?").execute(Tuple.of(name, id)).mapEmpty()
+    }
 }

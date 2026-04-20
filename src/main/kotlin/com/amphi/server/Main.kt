@@ -130,6 +130,12 @@ fun main() {
     LogConfig.setup()
 
     val vertx = Vertx.vertx()
+    if(AppConfig.database.type == SQLITE) {
+        ServerSqliteDatabase.init(vertx)
+    }
+    else {
+        ServerPostgresDatabase.init(vertx)
+    }
     vertx.deployVerticle(App())
 
     println("Server is running. Let's go! (port: ${AppConfig.port}, version: $VERSION)")
@@ -145,9 +151,7 @@ fun main() {
 
     val task = Runnable {
         try {
-
-            authorizationService.syncTokensLastAccess()
-            authorizationService.deleteObsoleteTokens()
+            authorizationService.deleteObsoleteTokens().await()
             val data = File(AppConfig.storage.data)
             val trashLogs = trashService.getTrashLogs()
             if(!data.exists()) {

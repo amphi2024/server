@@ -1,31 +1,31 @@
 package com.amphi.server.configs
-import java.sql.Connection
-import java.sql.DriverManager
+import io.vertx.core.Vertx
+import io.vertx.jdbcclient.JDBCConnectOptions
+import io.vertx.jdbcclient.JDBCPool
+import io.vertx.sqlclient.Pool
+import io.vertx.sqlclient.PoolOptions
 
 object ServerSqliteDatabase {
 
-  val connection: Connection by lazy {
-    DriverManager.getConnection("jdbc:sqlite:database.db")
-  }
+    lateinit var pool: Pool
 
-  fun close() {
-    connection.close()
-  }
+    fun init(vertx: Vertx) {
+        val connectOptions = JDBCConnectOptions()
+            .setJdbcUrl("jdbc:sqlite:database.db")
+        val poolOptions= PoolOptions().setMaxSize(16)
 
-  init {
-    try {
-      connection.createStatement().use { statement ->
-        statement.executeUpdate(
-          """
+        pool = JDBCPool.pool(vertx, connectOptions, poolOptions)
+        pool.query(
+            """
             CREATE TABLE IF NOT EXISTS users (
                 id TEXT PRIMARY KEY NOT NULL,
                 name TEXT NOT NULL,
                 password TEXT NOT NULL
             );
             """.trimIndent()
-        )
-        statement.executeUpdate(
-          """
+        ).execute().await()
+        pool.query(
+            """
                 CREATE TABLE IF NOT EXISTS tokens (
                     token TEXT PRIMARY KEY NOT NULL,
                     last_accessed INTEGER NOT NULL,
@@ -33,10 +33,10 @@ object ServerSqliteDatabase {
                     device_name TEXT NOT NULL
                 );
             """.trimIndent()
-        )
-        statement.executeUpdate(
-          """
-                CREATE TABLE IF NOT EXISTS events (
+        ).execute().await()
+        pool.query(
+            """
+                 CREATE TABLE IF NOT EXISTS events (
                     token TEXT NOT NULL,
                     action TEXT NOT NULL,
                     value TEXT NOT NULL,
@@ -44,24 +44,22 @@ object ServerSqliteDatabase {
                     app_type TEXT
                 );
             """.trimIndent()
-        )
-          val tableExists = statement.executeQuery("SELECT name FROM sqlite_master WHERE type='table' AND name='trashes';").next()
-
-          if (tableExists) {
-              statement.executeUpdate("ALTER TABLE trashes RENAME TO trash;")
-          }
-        statement.executeUpdate(
-          """
-           CREATE TABLE IF NOT EXISTS trash (
+        ).execute().await()
+        val tableExists = pool.query("SELECT name FROM sqlite_master WHERE type='table' AND name='trashes';").execute().await().any()
+        if (tableExists) {
+            pool.query("ALTER TABLE trashes RENAME TO trash;").execute().await()
+        }
+        pool.query(
+            """
+               CREATE TABLE IF NOT EXISTS trash (
                     path TEXT PRIMARY KEY NOT NULL,
                     timestamp INTEGER NOT NULL
-                );
+               );
             """.trimIndent()
-        )
-      }
-    } catch (e: Exception) {
-      println(e.message)
+        ).execute().await()
     }
-  }
 
+  fun close() {
+      pool.close()
+  }
 }
