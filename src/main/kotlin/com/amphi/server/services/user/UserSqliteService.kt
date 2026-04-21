@@ -35,6 +35,7 @@ class UserSqliteService : UserService {
         .compose { rows ->
           val row = rows.firstOrNull()
           if(row != null) {
+              val username = row.getString("name")
             val storedHashedPassword = row.getString("password")
             val argon2: Argon2 = Argon2Factory.create(Argon2Factory.Argon2Types.ARGON2id)
 
@@ -46,7 +47,7 @@ class UserSqliteService : UserService {
                   pool.preparedQuery("INSERT INTO tokens (token, last_accessed, user_id, device_name) VALUES(?, ?, ?, ?)")
                       .execute(Tuple.of(tokenValue, timestamp.toEpochMilli(), id, deviceName))
                       .map {
-                          tokenValue
+                          "$tokenValue;$username"
                       }
               }
               else {
