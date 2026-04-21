@@ -29,17 +29,11 @@ class WebsocketHandler {
 //                    }
 
                     ws.handler { message ->
-                        for (user in connectedUsers) {
-                            if (user.token.token != token.token && user.token.userId == token.userId) {
-                                user.webSocket.writeTextMessage(message.toString())
-                            }
+                        connectedUsers.filter { user ->
+                            user.token.token != token.token && user.token.userId == token.userId
+                        }.forEach { user ->
+                            user.webSocket.writeTextMessage(message.toString())
                         }
-//
-//                        connectedUsers.filter { user ->
-//                            user.token.token != token.token && user.token.userId == token.userId
-//                        }.forEach { user ->
-//                            user.webSocket.writeTextMessage(message.toString())
-//                        }
                     }
 
                 } else {
