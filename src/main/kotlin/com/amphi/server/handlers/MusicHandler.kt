@@ -5,7 +5,7 @@ import com.amphi.server.common.sendFileNotExists
 import com.amphi.server.common.sendNotFound
 import com.amphi.server.common.sendSuccess
 import com.amphi.server.common.sendUploadFailed
-import com.amphi.server.common.handleAuthorization
+import com.amphi.server.common.withAuth
 import com.amphi.server.common.sendAuthFailed
 import com.amphi.server.common.sendBadRequest
 import com.amphi.server.configs.AppConfig
@@ -42,7 +42,7 @@ object MusicHandler {
     }
     
     fun getSongs(req: HttpServerRequest) {
-        handleAuthorization(req) {token -> 
+        req.withAuth {token -> 
             val database = MusicDatabase(token.userId)
             val jsonArray = JsonArray()
 
@@ -56,7 +56,7 @@ object MusicHandler {
     }
     
     fun getArtists(req: HttpServerRequest) {
-        handleAuthorization(req) {token ->
+        req.withAuth {token ->
             val database = MusicDatabase(token.userId)
             val jsonArray = JsonArray()
 
@@ -70,7 +70,7 @@ object MusicHandler {
     }
 
     fun getAlbums(req: HttpServerRequest) {
-        handleAuthorization(req) {token ->
+        req.withAuth {token ->
             val database = MusicDatabase(token.userId)
             val jsonArray = JsonArray()
 
@@ -85,7 +85,7 @@ object MusicHandler {
 
     fun getMediaFiles(req: HttpServerRequest, split: List<String>, directoryName: String) {
         val id = split[3]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val jsonArray = JsonArray()
             val directory = itemDirectory(token, id, directoryName)
             val files = directory.listFiles()
@@ -104,7 +104,7 @@ object MusicHandler {
 
     fun getSong(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val database = MusicDatabase(token.userId)
             val song = database.getSongById(id)
             if (song == null) {
@@ -117,7 +117,7 @@ object MusicHandler {
 
     fun getArtist(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val database = MusicDatabase(token.userId)
             val artist = database.getArtistById(id)
             if (artist == null) {
@@ -130,7 +130,7 @@ object MusicHandler {
 
     fun getAlbum(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val database = MusicDatabase(token.userId)
             val album = database.getAlbumById(id)
             if (album == null) {
@@ -143,7 +143,7 @@ object MusicHandler {
 
     fun getPlaylist(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val database = MusicDatabase(token.userId)
             val playlist = database.getPlaylistById(id)
             if (playlist == null) {
@@ -156,7 +156,7 @@ object MusicHandler {
 
     fun uploadSong(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             req.bodyHandler { buffer ->
                 val database = MusicDatabase(token.userId)
                 val jsonObject = buffer.toJsonObject()
@@ -197,7 +197,7 @@ object MusicHandler {
     
     fun uploadArtist(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             req.bodyHandler { buffer ->
                 val database = MusicDatabase(token.userId)
                 val jsonObject = buffer.toJsonObject()
@@ -229,7 +229,7 @@ object MusicHandler {
 
     fun uploadAlbum(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             req.bodyHandler { buffer ->
                 val database = MusicDatabase(token.userId)
                 val jsonObject = buffer.toJsonObject()
@@ -263,7 +263,7 @@ object MusicHandler {
         val id = split[3]
         val filename = split[5]
 
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             req.isExpectMultipart = true
             req.uploadHandler { upload ->
                 val directory = itemDirectory(token, id, directoryName)
@@ -288,7 +288,7 @@ object MusicHandler {
         val id = split[3]
         val filename = split[5]
 
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val file = File(itemDirectory(token, id, directoryName), filename)
             if (!file.exists()) {
                 sendFileNotExists(req)
@@ -304,7 +304,7 @@ object MusicHandler {
 
     fun deleteSong(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val database = MusicDatabase(token.userId)
             database.setSongDeleted(id)
             eventService.saveEvent(
@@ -324,7 +324,7 @@ object MusicHandler {
 
     fun deleteArtist(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val database = MusicDatabase(token.userId)
             database.setArtistDeleted(id)
             eventService.saveEvent(
@@ -344,7 +344,7 @@ object MusicHandler {
 
     fun deleteAlbum(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val database = MusicDatabase(token.userId)
             database.setAlbumDeleted(id)
             eventService.saveEvent(
@@ -363,7 +363,7 @@ object MusicHandler {
     }
 
     fun getPlaylists(req: HttpServerRequest) {
-        handleAuthorization(req) {token ->
+        req.withAuth {token ->
             val database = MusicDatabase(token.userId)
             val jsonArray = JsonArray()
 
@@ -380,7 +380,7 @@ object MusicHandler {
 
     fun uploadPlaylist(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
-        handleAuthorization(req) {token ->
+        req.withAuth {token ->
             req.bodyHandler { buffer ->
                 val database = MusicDatabase(token.userId)
                 val jsonObject = buffer.toJsonObject()
@@ -410,7 +410,7 @@ object MusicHandler {
 
     fun deletePlaylist(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val database = MusicDatabase(token.userId)
             database.setPlaylistDeleted(id)
             eventService.saveEvent(
@@ -429,7 +429,7 @@ object MusicHandler {
     }
 
     fun getThemes(req: HttpServerRequest) {
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
 
             val database = MusicDatabase(token.userId)
             val jsonArray = JsonArray()
@@ -445,7 +445,7 @@ object MusicHandler {
 
     fun uploadTheme(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             req.bodyHandler { buffer ->
                 val database = MusicDatabase(token.userId)
                 val jsonObject = buffer.toJsonObject()
@@ -482,7 +482,7 @@ object MusicHandler {
 
     fun downloadTheme(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val database = MusicDatabase(token.userId)
             val theme = database.getThemeById(id)
             if (theme == null) {
@@ -496,7 +496,7 @@ object MusicHandler {
 
     fun deleteTheme(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val database = MusicDatabase(token.userId)
             database.deleteTheme(id)
             eventService.saveEvent(

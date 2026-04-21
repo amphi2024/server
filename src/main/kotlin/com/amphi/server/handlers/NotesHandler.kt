@@ -30,7 +30,7 @@ object NotesHandler {
     }
 
     fun getNotes(req: HttpServerRequest) {
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val database = NotesDatabase(token.userId)
             val jsonArray = JsonArray()
 
@@ -49,7 +49,7 @@ object NotesHandler {
 
     fun uploadNote(req: HttpServerRequest, split: List<String>) {
         val id = split[2]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             req.bodyHandler { buffer ->
                 val database = NotesDatabase(token.userId)
                 val jsonObject = buffer.toJsonObject()
@@ -94,7 +94,7 @@ object NotesHandler {
 
     fun downloadNote(req: HttpServerRequest, split: List<String>) {
         val id = split[2]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val database = NotesDatabase(token.userId)
             val note = database.getNoteById(id)
             if (note == null) {
@@ -108,7 +108,7 @@ object NotesHandler {
 
     fun deleteNote(req: HttpServerRequest, split: List<String>) {
         val id = split[2]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val database = NotesDatabase(token.userId)
             database.setNoteDeleted(id)
             eventService.saveEvent(
@@ -124,7 +124,7 @@ object NotesHandler {
 
     fun getFiles(req: HttpServerRequest, split: List<String>, directoryName: String) {
         val id = split[2]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val jsonArray = JsonArray()
             val directory = attachmentDirectory(token, id, directoryName)
             val files = directory.listFiles()
@@ -145,7 +145,7 @@ object NotesHandler {
         val id = split[2]
         val filename = split[4]
 
-        handleAuthorization(req) {token ->
+        req.withAuth {token ->
             req.isExpectMultipart = true
             req.uploadHandler { upload ->
                 val directory = attachmentDirectory(token, id, directoryName)
@@ -166,7 +166,7 @@ object NotesHandler {
     fun downloadFile(req: HttpServerRequest, split: List<String>, directoryName: String) {
         val id = split[2]
         val filename = split[4]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val file = File(attachmentDirectory(token, id, directoryName), filename)
             if (!file.exists()) {
                 sendFileNotExists(req)
@@ -179,7 +179,7 @@ object NotesHandler {
     fun deleteFile(req: HttpServerRequest, split: List<String>, directoryName: String) {
         val id = split[2]
         val filename = split[4]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val file = File(attachmentDirectory(token, id, directoryName), filename)
             if (file.exists()) {
                 moveToTrash(
@@ -195,7 +195,7 @@ object NotesHandler {
     }
 
     fun getThemes(req: HttpServerRequest) {
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
 
             val database = NotesDatabase(token.userId)
             val jsonArray = JsonArray()
@@ -211,7 +211,7 @@ object NotesHandler {
 
     fun uploadTheme(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             req.bodyHandler { buffer ->
                 val database = NotesDatabase(token.userId)
                 val jsonObject = buffer.toJsonObject()
@@ -252,7 +252,7 @@ object NotesHandler {
 
     fun downloadTheme(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val database = NotesDatabase(token.userId)
             val theme = database.getThemeById(id)
             if (theme == null) {
@@ -266,7 +266,7 @@ object NotesHandler {
 
     fun deleteTheme(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val database = NotesDatabase(token.userId)
             database.deleteTheme(id)
             eventService.saveEvent(

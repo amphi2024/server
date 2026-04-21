@@ -2,25 +2,31 @@ package com.amphi.server.handlers
 
 import com.amphi.server.common.Messages
 import com.amphi.server.models.ConnectedUser
-import com.amphi.server.common.handleAuthorization
+import com.amphi.server.common.withAuth
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.vertx.core.http.HttpServerRequest
 
 class WebsocketHandler {
-    private val connectedUsers: MutableList<ConnectedUser> = mutableListOf()
+    private val connectedUsers: MutableSet<ConnectedUser> = mutableSetOf()
 
     fun handleWebsocket(req: HttpServerRequest) {
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             req.toWebSocket().onComplete { asyncResult ->
                 if (asyncResult.succeeded()) {
                     val ws = asyncResult.result()
 
-                    connectedUsers.add(
-                        ConnectedUser(
-                            webSocket = ws,
-                            token = token
-                        )
-                    )
+                    val currentUser = ConnectedUser(webSocket = ws, token = token)
+
+                    connectedUsers.add(currentUser)
+
+//                    ws.closeHandler {
+//                        connectedUsers.remove(currentUser)
+//                    }
+//
+//                    ws.exceptionHandler {
+//                        connectedUsers.remove(currentUser)
+//                        ws.close()
+//                    }
 
                     ws.handler { message ->
                         for (user in connectedUsers) {
@@ -28,7 +34,12 @@ class WebsocketHandler {
                                 user.webSocket.writeTextMessage(message.toString())
                             }
                         }
-
+//
+//                        connectedUsers.filter { user ->
+//                            user.token.token != token.token && user.token.userId == token.userId
+//                        }.forEach { user ->
+//                            user.webSocket.writeTextMessage(message.toString())
+//                        }
                     }
 
                 } else {

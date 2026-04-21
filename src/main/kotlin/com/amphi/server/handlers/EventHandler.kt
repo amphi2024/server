@@ -2,7 +2,7 @@ package com.amphi.server.handlers
 
 import io.vertx.core.http.HttpServerRequest
 import com.amphi.server.common.Messages
-import com.amphi.server.common.handleAuthorization
+import com.amphi.server.common.withAuth
 import com.amphi.server.common.sendBadRequest
 import com.amphi.server.common.sendSuccess
 import com.amphi.server.eventService
@@ -11,7 +11,7 @@ object EventHandler {
 
     fun getEvents(req: HttpServerRequest, appType: String) {
         val requestToken = req.headers()["Authorization"]
-        handleAuthorization(req) {
+        req.withAuth {
             eventService.getEvents(requestToken, appType).onSuccess { result ->
                 req.response().putHeader("content-type", "application/json; charset=UTF-8")
                     .end(result.joinToString(","))
@@ -23,7 +23,7 @@ object EventHandler {
     }
 
     fun acknowledgeEvent(req: HttpServerRequest) {
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             req.bodyHandler { buffer ->
                 val jsonBody = buffer.toJsonObject()
                 val action = jsonBody.getString("action")

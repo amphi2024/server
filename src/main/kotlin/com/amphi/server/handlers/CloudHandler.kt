@@ -2,7 +2,7 @@ package com.amphi.server.handlers
 
 import com.amphi.server.common.Messages
 import com.amphi.server.common.StatusCode
-import com.amphi.server.common.handleAuthorization
+import com.amphi.server.common.withAuth
 import com.amphi.server.common.sendBadRequest
 import com.amphi.server.common.sendFileNotExists
 import com.amphi.server.common.sendNotFound
@@ -31,7 +31,7 @@ object CloudHandler {
     }
 
     fun createFile(req: HttpServerRequest) {
-        handleAuthorization(req) {token ->
+        req.withAuth {token ->
             req.bodyHandler { buffer ->
                 val database = CloudDatabase(token.userId)
                 val id = database.generateUniqueFileId()
@@ -60,7 +60,7 @@ object CloudHandler {
 
     fun uploadFile(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
-        handleAuthorization(req) {token ->
+        req.withAuth {token ->
             req.isExpectMultipart = true
             req.uploadHandler { upload ->
                 val directory = fileDirectoryById(token.userId, id)
@@ -94,7 +94,7 @@ object CloudHandler {
     }
 
     fun getFiles(req: HttpServerRequest) {
-        handleAuthorization(req) {token ->
+        req.withAuth {token ->
             val jsonArray = JsonArray()
             val database = CloudDatabase(token.userId)
             val list = database.getFiles(null)
@@ -109,7 +109,7 @@ object CloudHandler {
     }
 
     fun downloadFileInfo(req: HttpServerRequest, split: List<String>) {
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val id = split[3]
             val database = CloudDatabase(token.userId)
             val fileModel = database.getLatestFileModelById(id)
@@ -126,7 +126,7 @@ object CloudHandler {
     }
 
     fun updateFileInfo(req: HttpServerRequest, split: List<String>) {
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             req.bodyHandler { buffer ->
                 val id = split[3]
                 val database = CloudDatabase(token.userId)
@@ -147,7 +147,7 @@ object CloudHandler {
     fun downloadFile(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
         val version = 1
-        handleAuthorization(req) {token ->
+        req.withAuth {token ->
             val database = CloudDatabase(token.userId)
             val fileModel = database.getLatestFileModelById(id)
             database.close()
@@ -168,7 +168,7 @@ object CloudHandler {
     }
 
     fun deleteFile(req: HttpServerRequest, split: List<String>) {
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val id = split[3]
             val database = CloudDatabase(token.userId)
             val fileModel = database.getLatestFileModelById(id)
@@ -198,7 +198,7 @@ object CloudHandler {
     fun downloadThumbnail(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
         val version = 1
-        handleAuthorization(req) {token ->
+        req.withAuth {token ->
             val database = CloudDatabase(token.userId)
             val fileModel = database.getLatestFileModelById(id)
             database.close()

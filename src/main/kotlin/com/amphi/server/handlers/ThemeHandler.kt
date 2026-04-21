@@ -1,7 +1,7 @@
 package com.amphi.server.handlers
 
 import com.amphi.server.common.Messages
-import com.amphi.server.common.handleAuthorization
+import com.amphi.server.common.withAuth
 import com.amphi.server.common.sendSuccess
 import com.amphi.server.configs.AppConfig
 import com.amphi.server.eventService
@@ -11,7 +11,7 @@ import java.io.File
 object ThemeHandler {
 
     fun getColors(req: HttpServerRequest, appType: String) {
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val file = File(AppConfig.storage.data, "${token.userId}/${appType}/colors")
             if (!file.exists()) {
                 req.response().setStatusCode(404).end(Messages.FILE_NOT_EXISTS)
@@ -22,7 +22,7 @@ object ThemeHandler {
     }
 
     fun uploadColors(req: HttpServerRequest, appType: String) {
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             req.bodyHandler { buffer ->
                 val file = File(AppConfig.storage.data,"${token.userId}/${appType}/colors")
                 file.writeText(buffer.toString())

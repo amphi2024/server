@@ -14,7 +14,7 @@ object PhotosHandler {
 
     fun uploadAlbum(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             req.bodyHandler { buffer ->
                 val jsonObject = buffer.toJsonObject()
                 val database = PhotosDatabase(token.userId)
@@ -44,7 +44,7 @@ object PhotosHandler {
 
     fun downloadAlbum(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val database = PhotosDatabase(token.userId)
             val album = database.getAlbumById(id)
             if (album == null) {
@@ -58,7 +58,7 @@ object PhotosHandler {
 
     fun deleteAlbum(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val database = PhotosDatabase(token.userId)
             database.setAlbumDeleted(id)
             eventService.saveEvent(
@@ -73,7 +73,7 @@ object PhotosHandler {
     }
 
     fun getAlbums(req: HttpServerRequest) {
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val database = PhotosDatabase(token.userId)
             val jsonArray = JsonArray()
             database.getAlbums().forEach { album ->
@@ -113,7 +113,7 @@ object PhotosHandler {
 
     fun uploadPhotoInfo(req: HttpServerRequest, split: List<String>) {
         val id = split[2]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             req.bodyHandler { buffer ->
                 val jsonObject = buffer.toJsonObject()
                 val database = PhotosDatabase(token.userId)
@@ -141,13 +141,13 @@ object PhotosHandler {
 
     fun uploadPhoto(req: HttpServerRequest, split: List<String>) {
         val id = split[2]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             req.isExpectMultipart = true
             val database = PhotosDatabase(token.userId)
             val photo = database.getPhotoById(id)
             if (photo == null) {
                 sendBadRequest(req)
-                return@handleAuthorization
+                return@withAuth
             }
             val fileExtension = photo.mimeType.split("/").last()
             database.close()
@@ -174,7 +174,7 @@ object PhotosHandler {
 
     fun downloadPhotoInfo(req: HttpServerRequest, split: List<String>) {
         val id = split[2]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val database = PhotosDatabase(token.userId)
             val photo = database.getPhotoById(id)
             if (photo == null) {
@@ -188,7 +188,7 @@ object PhotosHandler {
 
     fun downloadThumbnail(req: HttpServerRequest, split: List<String>) {
         val id = split[2]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val directoryPath = photoDirectoryPathById(token.userId, id)
             val file = File("$directoryPath/thumbnail.jpg")
             if (file.exists()) {
@@ -206,7 +206,7 @@ object PhotosHandler {
 
     fun downloadPhoto(req: HttpServerRequest, split: List<String>) {
         val id = split[2]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val directoryPath = photoDirectoryPathById(token.userId, id)
             val file = photoFileById(directoryPath)
             if (file != null) {
@@ -219,13 +219,13 @@ object PhotosHandler {
 
     fun deletePhoto(req: HttpServerRequest, split: List<String>) {
         val id = split[2]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val directory = photoDirectoryById(token.userId, id)
             val database = PhotosDatabase(token.userId)
             val photo = database.getPhotoById(id)
             if(photo == null) {
                 sendBadRequest(req)
-                return@handleAuthorization
+                return@withAuth
             }
             if (directory.exists()) {
                 database.setPhotoDeleted(id)
@@ -251,7 +251,7 @@ object PhotosHandler {
     }
 
     fun getPhotos(req: HttpServerRequest) {
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val database = PhotosDatabase(token.userId)
             val jsonArray = JsonArray()
             database.getPhotos().forEach { photo ->
@@ -264,7 +264,7 @@ object PhotosHandler {
 
     fun getSha256(req: HttpServerRequest, split: List<String>) {
         val id = split[2]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val directoryPath = photoDirectoryPathById(token.userId, id)
             val file = photoFileById(directoryPath)
             if (file != null) {
@@ -285,7 +285,7 @@ object PhotosHandler {
     }
 
     fun getThemes(req: HttpServerRequest) {
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
 
             val database = PhotosDatabase(token.userId)
             val jsonArray = JsonArray()
@@ -301,7 +301,7 @@ object PhotosHandler {
 
     fun uploadTheme(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             req.bodyHandler { buffer ->
                 val database = PhotosDatabase(token.userId)
                 val jsonObject = buffer.toJsonObject()
@@ -338,7 +338,7 @@ object PhotosHandler {
 
     fun downloadTheme(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val database = PhotosDatabase(token.userId)
             val theme = database.getThemeById(id)
             if (theme == null) {
@@ -352,7 +352,7 @@ object PhotosHandler {
 
     fun deleteTheme(req: HttpServerRequest, split: List<String>) {
         val id = split[3]
-        handleAuthorization(req) { token ->
+        req.withAuth { token ->
             val database = PhotosDatabase(token.userId)
             database.deleteTheme(id)
             eventService.saveEvent(
