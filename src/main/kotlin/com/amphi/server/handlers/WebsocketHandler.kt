@@ -19,14 +19,14 @@ class WebsocketHandler {
 
                     connectedUsers.add(currentUser)
 
-//                    ws.closeHandler {
-//                        connectedUsers.remove(currentUser)
-//                    }
-//
-//                    ws.exceptionHandler {
-//                        connectedUsers.remove(currentUser)
-//                        ws.close()
-//                    }
+                    ws.closeHandler {
+                        connectedUsers.remove(currentUser)
+                    }
+
+                    ws.exceptionHandler {
+                        connectedUsers.remove(currentUser)
+                        ws.close()
+                    }
 
                     ws.handler { message ->
                         connectedUsers.filter { user ->
