@@ -12,7 +12,7 @@ import java.time.ZoneId
 import java.util.LinkedHashMap
 import kotlin.collections.forEach
 
-fun deleteObsoleteFilesInTrash(trash: File, trashLogs: List<TrashLog>) {
+fun deleteObsoleteFilesInTrash(trash: File, trashLogs: Set<TrashLog>) {
     trash.listFiles()?.forEach { file ->
         if (file.isFile) {
             trashLogs.forEach { trashLog ->

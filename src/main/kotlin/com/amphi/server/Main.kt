@@ -153,11 +153,11 @@ fun main() {
         try {
             authorizationService.deleteObsoleteTokens().await()
             val data = File(AppConfig.storage.data)
-            val trashLogs = trashService.getTrashLogs()
+            val trashLogs = trashService.getTrashLogs().await()
             if(!data.exists()) {
                 data.mkdirs()
             }
-            userService.getUserIds().forEach { userId ->
+            userService.getUserIds().await().forEach { userId ->
                 val userDirectory = File(data, userId)
                 if(!userDirectory.exists()) {
                     userDirectory.mkdirs()
