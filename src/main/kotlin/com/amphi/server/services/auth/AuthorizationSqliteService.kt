@@ -1,5 +1,6 @@
 package com.amphi.server.services.auth
 
+import com.amphi.server.common.InvalidTokenException
 import com.amphi.server.configs.AppConfig
 import com.amphi.server.configs.ServerSqliteDatabase.pool
 import com.amphi.server.models.Token
@@ -30,7 +31,7 @@ class AuthorizationSqliteService : AuthorizationService {
                         .await()
                     Future.succeededFuture(userToken)
                 } else {
-                    Future.failedFuture(SecurityException())
+                    Future.failedFuture(InvalidTokenException())
                 }
             }
     }
